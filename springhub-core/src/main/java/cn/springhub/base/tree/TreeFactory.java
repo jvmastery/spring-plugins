@@ -25,7 +25,7 @@ public class TreeFactory {
      *
      * @return              多叉树
      */
-    public static Tree<Node<Long>> build() {
+    public static NaryTree<Node<Long>> build() {
         return build(EmptyNode.DEFAULT_LONG_EMPTY_NODE, Node::getId, Node::getParentId, Comparator.comparingLong(Node::getPx));
     }
 
@@ -39,8 +39,8 @@ public class TreeFactory {
      *
      * @return              多叉树
      */
-    public static Tree<Node<Long>> build(Collection<? extends Node<Long>> dataList) {
-        Tree<Node<Long>> tree = build();
+    public static NaryTree<Node<Long>> build(Collection<? extends Node<Long>> dataList) {
+        NaryTree<Node<Long>> tree = build();
         tree.insertAll(dataList);
 
         return tree;
@@ -56,7 +56,7 @@ public class TreeFactory {
      * @return              多叉树
      * @param <T>           数据类型
      */
-    public static <T> Tree<T> build(T root,
+    public static <T> NaryTree<T> build(T root,
                                         Function<T, ? extends ConstantDesc> keyExtractor,
                                         Function<T, ? extends ConstantDesc> parentExtractor,
                                         Comparator<? super T> sortComparator) {
@@ -79,12 +79,12 @@ public class TreeFactory {
      * @return              多叉树
      * @param <T>           数据类型
      */
-    public static <T> Tree<T> build(T root,
+    public static <T> NaryTree<T> build(T root,
                                         Function<T, ? extends ConstantDesc> keyExtractor,
                                         Function<T, ? extends ConstantDesc> parentExtractor,
                                         Comparator<? super T> sortComparator,
                                         Collection<T> dataList) {
-        Tree<T> naryTree = build(root, keyExtractor, parentExtractor, sortComparator);
+        NaryTree<T> naryTree = build(root, keyExtractor, parentExtractor, sortComparator);
         naryTree.insertAll(dataList);
 
         return naryTree;

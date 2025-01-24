@@ -21,7 +21,7 @@ import java.util.function.Predicate;
  * @param root 根节点
  * @param <T>   节点内容类型
  */
-record NaryTree<T>(NaryTreeNode<T> root,
+public record NaryTree<T>(NaryTreeNode<T> root,
                    Function<T, ? extends ConstantDesc> keyExtractor,
                    Function<T, ? extends ConstantDesc> parentExtractor,
                    Comparator<? super T> sortComparator
@@ -285,7 +285,7 @@ record NaryTree<T>(NaryTreeNode<T> root,
      * @param children  子节点
      * @param <T>   节点数据类型
      */
-    record NaryTreeNode<T>(T data, List<NaryTreeNode<T>> children) implements cn.springhub.base.tree.TreeNode<T> {
+    public record NaryTreeNode<T>(T data, List<NaryTreeNode<T>> children) implements cn.springhub.base.tree.TreeNode<T> {
         /**
          * 构建节点
          * @param data  节点数据
