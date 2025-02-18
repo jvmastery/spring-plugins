@@ -14,8 +14,8 @@ subprojects {
     apply plugin: 'io.spring.dependency-management'
 
     // 版本配置
-    group = 'cn.springhub'
-    version = '1.0.1-RELEASE'
+    group = 'cn.jvmaster'
+    version = '1.0.0-RELEASE'
 
     // 通用编译配置
     java {

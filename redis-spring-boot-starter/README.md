@@ -250,7 +250,7 @@ public void test5(String name) throws Exception {
 ```
 
 ### 5、自定义缓存解析器
-默认情况下，缓存都有各自的解析器方法，但同时我们可以通过自定义缓存解析器来达到修改解析器的目的，如果需要增加自定义解析器，需要实现`cn.springhub.redis.generator.CacheProcessor`接口。
+默认情况下，缓存都有各自的解析器方法，但同时我们可以通过自定义缓存解析器来达到修改解析器的目的，如果需要增加自定义解析器，需要实现`generator.cn.jvmaster.redis.CacheProcessor`接口。
 
 自定义解析器只需要实现接口，然后将类添加到spring容器中即可。
 ```

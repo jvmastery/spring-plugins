@@ -1,11 +1,9 @@
-import cn.springhub.base.tree.Node;
-import cn.springhub.base.tree.Tree;
-import cn.springhub.base.tree.TreeFactory;
-import cn.springhub.base.tree.TreeNode;
-import cn.springhub.base.util.RandomUtils;
-import cn.springhub.base.util.StringUtils;
+import cn.jvmaster.core.tree.Node;
+import cn.jvmaster.core.tree.Tree;
+import cn.jvmaster.core.tree.TreeFactory;
+import cn.jvmaster.core.tree.TreeNode;
+import cn.jvmaster.core.util.RandomUtils;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,7 +11,6 @@ import java.util.Map;
 public class Test {
 
     public static void main(String[] args) {
-        testCustomerNode();
     }
 
     private static void testCustomerNode() {
@@ -41,6 +38,7 @@ public class Test {
 
         // 构建树
 
+
 //        Tree<TestNode> naryTree = TreeFactory.build(new TestNode(0L, 0L),
 //            TestNode::getId,
 //            TestNode::getParentId,
@@ -56,8 +54,10 @@ public class Test {
 //            List<? extends TreeNode<TestNode>> children = item.getChildren();
 //        });
 
-        Tree<Integer> tree = TreeFactory.build(0, item -> item, map::get, Comparator.comparingInt(Integer::intValue), list1);
-        System.out.println(tree);
+//        Tree<Integer> tree = TreeFactory.build(0, item -> item, map::get, Comparator.comparingInt(Integer::intValue), list1);
+//        System.out.println(tree);
+
+        Tree<Node<Long>> tree = TreeFactory.build(list);
 
 //        naryTree.postOrderTraverse(item -> {
 //
