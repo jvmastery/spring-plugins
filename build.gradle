@@ -15,7 +15,8 @@ subprojects {
 
     // 版本配置
     group = 'cn.jvmaster'
-    version = '1.0.0-RELEASE'
+//     version = '1.0.0-RELEASE'
+    version = '1.0.01-snapshot'
 
     // 通用编译配置
     java {

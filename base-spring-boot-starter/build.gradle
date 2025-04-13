@@ -3,10 +3,10 @@ plugins {
 }
 
 dependencies {
-    api project(":springhub-core")
-    implementation 'org.springframework.boot:spring-boot-starter'
+    api project(":core")
+    api 'org.springframework.boot:spring-boot-starter'
     annotationProcessor 'org.springframework.boot:spring-boot-autoconfigure-processor'
-    implementation 'org.springframework.boot:spring-boot-autoconfigure'
+    api 'org.springframework.boot:spring-boot-autoconfigure'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }

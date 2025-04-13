@@ -3,6 +3,7 @@ package cn.jvmaster.core.tree;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 /**
  * 二叉树，每个节点最多有两个子节点，通常被称为左子节点和右子节点。常见变种有：

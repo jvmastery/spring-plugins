@@ -7,8 +7,11 @@ import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.Provider;
 import java.security.SecureRandom;
+import java.util.Base64;
 import javax.crypto.KeyGenerator;
+import javax.crypto.Mac;
 import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 
 /**
  * 加密工具类
@@ -132,9 +135,26 @@ public class CryptoUtils {
         return keyPairGen;
     }
 
-    public static void main(String[] args) {
-        KeyPair secretKey = generateRsaKey();
-        System.out.println( secretKey.getPrivate());
-        System.out.println(secretKey.getPublic());
+    public static String calculateHMAC(String data, String key) throws Exception {
+        // 指定使用的 HMAC 算法，例如 HmacSHA1 或 HmacSHA256
+        String algorithm = "HmacSHA1";
+        // 获取 Mac 实例
+        Mac mac = Mac.getInstance(algorithm);
+        // 构造密钥
+        SecretKeySpec secretKeySpec = new SecretKeySpec(key.getBytes("UTF-8"), algorithm);
+        // 初始化 Mac
+        mac.init(secretKeySpec);
+        // 执行 HMAC 计算
+        byte[] hmacBytes = mac.doFinal(data.getBytes("UTF-8"));
+        // 使用 Base64 编码
+        return Base64.getEncoder().encodeToString(hmacBytes);
+    }
+
+    public static void main(String[] args) throws Exception {
+//        KeyPair secretKey = generateRsaKey();
+//        System.out.println( secretKey.getPrivate());
+//        System.out.println(secretKey.getPublic());
+
+        System.out.println(calculateHMAC("eyJzY29wZSI6ImJsb2ctc3ByaW5naHViLWNuIiwiZGVhZGxpbmUiOjE0NTE0OTEyMDB9", "WdqFUPOs3xyHTAZCvIaAUZmRQAVRBTNOxELedt5d"));
     }
 }

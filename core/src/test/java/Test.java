@@ -1,9 +1,12 @@
+import cn.jvmaster.core.tree.BinarySearchTree;
+import cn.jvmaster.core.tree.NaryTree;
 import cn.jvmaster.core.tree.Node;
 import cn.jvmaster.core.tree.Tree;
 import cn.jvmaster.core.tree.TreeFactory;
 import cn.jvmaster.core.tree.TreeNode;
 import cn.jvmaster.core.util.RandomUtils;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,6 +14,7 @@ import java.util.Map;
 public class Test {
 
     public static void main(String[] args) {
+        testCustomerNode();
     }
 
     private static void testCustomerNode() {
@@ -39,13 +43,21 @@ public class Test {
         // 构建树
 
 
-//        Tree<TestNode> naryTree = TreeFactory.build(new TestNode(0L, 0L),
+//        NaryTree<TestNode> naryTree = TreeFactory.build(new TestNode(0L, 0L),
 //            TestNode::getId,
 //            TestNode::getParentId,
 //            Comparator.comparingLong(TestNode::getPx),
 //            list
 //        );
 //        System.out.println(naryTree);
+
+        BinarySearchTree<Integer> binarySearchTree = new BinarySearchTree<>();
+        for (int i = 0; i < 100; i++) {
+            binarySearchTree.insert(RandomUtils.random(100));
+        }
+
+        System.out.println();
+
 //        Tree<Node<Long>> testNodeTree = TreeFactory.build(list);
 //        System.out.println(testNodeTree);
 //        String s = StringUtils.toString(naryTree);
@@ -66,18 +78,18 @@ public class Test {
 
     }
 
-    public static class TestTreeNode implements TreeNode<TestNode> {
-
-        @Override
-        public TestNode getData() {
-            return null;
-        }
-
-        @Override
-        public List<? extends TreeNode<TestNode>> getChildren() {
-            return List.of();
-        }
-    }
+//    public static class TestTreeNode implements TreeNode<TestNode> {
+//
+//        @Override
+//        public TestNode getData() {
+//            return null;
+//        }
+//
+//        @Override
+//        public List<? extends TreeNode<TestNode>> getChildren() {
+//            return List.of();
+//        }
+//    }
 
     public static class TestNode implements Node<Long> {
 

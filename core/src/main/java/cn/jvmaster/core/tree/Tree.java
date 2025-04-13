@@ -2,7 +2,9 @@ package cn.jvmaster.core.tree;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 /**
  * 树接口
@@ -26,28 +28,28 @@ public interface Tree<T> {
     <V extends T> Tree<T> insertAll(Collection<V> nodes);
 
     /**
-     * 根据节点数据的id来删除节点
+     * 根据节点数据来删除节点
      *
-     * @param id  节点数据的ID
+     * @param data  节点数据的
      * @return  删除节点的子节点
      */
-    List<T> delete(T id);
+    List<T> delete(T data);
 
     /**
-     * 根据节点数据的id找到当前节点数据
+     * 根据节点数据的找到当前节点数据
      *
-     * @param id   节点数据的ID
-     * @return  对应的节点
+     * @param data   节点数据
+     * @return 对应的节点
      */
-    TreeNode<T> search(T id);
+    TreeNode<T> search(T data);
 
     /**
-     * 判断是否存在对应的节点ID
+     * 判断是否存在对应的节点
      *
-     * @param id   节点id
+     * @param data   节点
      * @return  如果包含，返回true
      */
-    boolean contains(T id);
+    boolean contains(T data);
 
     /**
      * 前序遍历
