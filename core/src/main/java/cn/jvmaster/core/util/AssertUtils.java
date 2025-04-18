@@ -29,8 +29,16 @@ public class AssertUtils {
         }
     }
 
+    /**
+     * 断言对象不为空
+     * @param obj   断言对象
+     * @param message   提示信息
+     */
     public static void notEmpty(Object obj, String message) {
-
+        notNull(obj, message);
+        if (obj instanceof String s && s.isEmpty()) {
+            throw new SystemException(message);
+        }
     }
 
 }

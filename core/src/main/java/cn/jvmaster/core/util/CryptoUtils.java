@@ -69,7 +69,7 @@ public class CryptoUtils {
 
             return keyGenerator.generateKey();
         } catch (Exception e) {
-            throw new SystemException(e.getMessage(), e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -113,7 +113,7 @@ public class CryptoUtils {
 
             return keyPairGenerator.generateKeyPair();
         } catch (Exception e) {
-            throw new SystemException(e.getMessage(), e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -130,7 +130,7 @@ public class CryptoUtils {
                 ? KeyPairGenerator.getInstance(algorithm)
                 : KeyPairGenerator.getInstance(algorithm, provider);
         } catch (NoSuchAlgorithmException e) {
-            throw new SystemException(e.getMessage(), e);
+            throw new RuntimeException(e);
         }
         return keyPairGen;
     }

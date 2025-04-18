@@ -1,12 +1,7 @@
-plugins {
-    id 'org.springframework.boot' version '3.1.4'
-}
-
 dependencies {
     api project(":core")
     api 'org.springframework.boot:spring-boot-starter'
-    annotationProcessor 'org.springframework.boot:spring-boot-autoconfigure-processor'
     api 'org.springframework.boot:spring-boot-autoconfigure'
-
+    annotationProcessor 'org.springframework.boot:spring-boot-autoconfigure-processor'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }

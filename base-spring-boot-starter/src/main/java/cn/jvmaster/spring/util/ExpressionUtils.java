@@ -22,7 +22,7 @@ import org.springframework.expression.spel.support.StandardEvaluationContext;
 **/
 public class ExpressionUtils {
 
-    private static final ExpressionParser parser = new SpelExpressionParser();
+    private static final ExpressionParser PARSER = new SpelExpressionParser();
     private static final Map<String, Expression> EXPRESSION_MAP = new HashMap<>();
 
     /**
@@ -74,7 +74,7 @@ public class ExpressionUtils {
 
             return expression.getValue(context, clazz);
         } catch (Exception e) {
-            throw new SystemException(e.getMessage(), e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -89,7 +89,7 @@ public class ExpressionUtils {
             return EXPRESSION_MAP.get(exp);
         }
 
-        Expression expression = isTemplate ? parser.parseExpression(exp, new TemplateParserContext()) : parser.parseExpression(exp);
+        Expression expression = isTemplate ? PARSER.parseExpression(exp, new TemplateParserContext()) : PARSER.parseExpression(exp);
         EXPRESSION_MAP.put(exp, expression);
 
         return expression;

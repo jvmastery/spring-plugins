@@ -1,5 +1,6 @@
 package cn.jvmaster.redis.starter;
 
+import cn.jvmaster.core.constant.DateTimeFormat;
 import cn.jvmaster.core.util.StringUtils;
 import cn.jvmaster.redis.generator.CacheKeyGenerator;
 import cn.jvmaster.redis.generator.CacheProcessor;
@@ -16,6 +17,18 @@ import cn.jvmaster.redis.service.ListRedisOperationService;
 import cn.jvmaster.redis.service.RedisOperationService;
 import cn.jvmaster.redis.service.SetRedisOperationService;
 import cn.jvmaster.redis.service.StringRedisOperationService;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -24,6 +37,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
@@ -43,23 +57,55 @@ public class RedisAutoConfiguration {
         this.redisProperties = redisProperties;
     }
 
+    @Bean("cacheObjectMapper")
+    @ConditionalOnMissingBean(name = "cacheObjectMapper")
+    public ObjectMapper objectMapper() {
+        return JsonMapper.builder()
+            // 启用 MapperFeature 选项
+            .enable(MapperFeature.USE_BASE_TYPE_AS_DEFAULT_IMPL)
+
+            // 反序列化配置
+            .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+            .disable(DeserializationFeature.FAIL_ON_INVALID_SUBTYPE)
+            .disable(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES)
+            .disable(DeserializationFeature.FAIL_ON_MISSING_CREATOR_PROPERTIES)
+            .disable(DeserializationFeature.FAIL_ON_UNRESOLVED_OBJECT_IDS)
+
+            // 序列化配置
+            .enable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
+            // 只序列化非空字段
+            .serializationInclusion(JsonInclude.Include.NON_NULL)
+            // 设置日期格式
+            .defaultDateFormat(new SimpleDateFormat(DateTimeFormat.NORMAL_DATETIME))
+
+            // 启用默认类型信息
+            .activateDefaultTyping(LaissezFaireSubTypeValidator.instance, ObjectMapper.DefaultTyping.NON_FINAL, JsonTypeInfo.As.PROPERTY)
+
+            // 注册 Jackson 模块
+            .addModule(new ParameterNamesModule())
+            .addModule(new JavaTimeModule())
+            .addModule(new Jdk8Module())
+
+            .build();
+    }
+
     /**
      * 配置redis template
      * @param redisConnectionFactory redis连接配置
      * @return  redisTemplate
      */
     @Bean
-    @ConditionalOnBean(RedisConnectionFactory.class)
-    @ConditionalOnMissingBean
-    public RedisTemplate<String, ?> redisTemplate(RedisConnectionFactory redisConnectionFactory) {
-        RedisTemplate<String, ?> redisTemplate = new RedisTemplate<>();
+    @Primary
+    @ConditionalOnMissingBean(name = "redisTemplate")
+    public RedisTemplate<?, ?> redisTemplate(RedisConnectionFactory redisConnectionFactory) {
+        RedisTemplate<?, ?> redisTemplate = new RedisTemplate<>();
         redisTemplate.setConnectionFactory(redisConnectionFactory);
 
         // 配置序列化方式
         redisTemplate.setKeySerializer(new RedisKeySerializer(redisProperties.getPrefix()));
         redisTemplate.setHashKeySerializer(new RedisKeySerializer());
 
-        GenericJackson2JsonRedisSerializer valueSerializer = new GenericJackson2JsonRedisSerializer(StringUtils.getObjectMapper());
+        GenericJackson2JsonRedisSerializer valueSerializer = new GenericJackson2JsonRedisSerializer(objectMapper());
         redisTemplate.setValueSerializer(valueSerializer);
         redisTemplate.setHashValueSerializer(valueSerializer);
 

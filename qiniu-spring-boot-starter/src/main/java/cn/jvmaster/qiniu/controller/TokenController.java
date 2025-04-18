@@ -1,19 +1,13 @@
 package cn.jvmaster.qiniu.controller;
 
 import cn.jvmaster.core.util.StringUtils;
-import cn.jvmaster.qiniu.starter.EnableQiniu;
-import cn.jvmaster.qiniu.starter.QiniuAutoConfiguration;
 import cn.jvmaster.qiniu.starter.QiniuProperties;
 import com.qiniu.util.Auth;
 import com.qiniu.util.StringMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 /**

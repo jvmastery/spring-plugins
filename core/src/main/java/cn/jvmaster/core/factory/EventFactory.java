@@ -79,7 +79,7 @@ public class EventFactory {
                 item.method.invoke(item.bean, params);
             }
         } catch (Exception e) {
-            throw new SystemException(e.getMessage(), e);
+            throw new RuntimeException(e);
         }
     }
 

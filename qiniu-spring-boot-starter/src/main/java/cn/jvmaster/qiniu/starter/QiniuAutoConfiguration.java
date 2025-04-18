@@ -1,8 +1,6 @@
 package cn.jvmaster.qiniu.starter;
 
-import cn.jvmaster.qiniu.controller.TokenController;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 

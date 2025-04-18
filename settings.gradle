@@ -1,6 +1,14 @@
+pluginManagement {
+    plugins {
+        id 'org.springframework.boot' version '3.4.4'
+        id 'io.spring.dependency-management' version '1.1.3'
+    }
+}
+
 rootProject.name = 'spring-parent'
 include 'core'
 include 'redis-spring-boot-starter'
 include 'base-spring-boot-starter'
 include 'qiniu-spring-boot-starter'
+include 'security-spring-boot-starter'
 

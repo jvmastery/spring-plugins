@@ -1,6 +1,5 @@
 package cn.jvmaster.redis.service;
 
-import cn.jvmaster.core.exception.SystemException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -174,7 +173,7 @@ public abstract class AbstractRedisOperationService<T> {
 
             return result;
         } catch (Exception e) {
-            throw new SystemException(e.getMessage(), e);
+            throw new RuntimeException(e);
         }
     }
 

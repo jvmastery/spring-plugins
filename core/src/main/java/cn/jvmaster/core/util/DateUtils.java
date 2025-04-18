@@ -73,7 +73,7 @@ public class DateUtils {
         try {
             return date(getFormat(format).parse(time));
         } catch (Exception e) {
-            throw new SystemException(e.getMessage(), e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -100,7 +100,7 @@ public class DateUtils {
         try {
             return getFormat(format).format(date);
         } catch (Exception e) {
-            throw new SystemException(e.getMessage(), e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -257,7 +257,7 @@ public class DateUtils {
      * 比较2个日期的大小
      * @param dateTime1 开始时间
      * @param dateTime2 结束时间
-     * @return  dateTime1 > dateTime2， 返回1，dateTime1 = dateTime2，返回0，dateTime1 < dateTime2，返回-1
+     * @return  dateTime1 &gt; dateTime2， 返回1，dateTime1 = dateTime2，返回0，dateTime1 &lt; dateTime2，返回-1
      */
     public static int compare(DateTime dateTime1, DateTime dateTime2) {
         if (dateTime1 == null && dateTime2 == null) {

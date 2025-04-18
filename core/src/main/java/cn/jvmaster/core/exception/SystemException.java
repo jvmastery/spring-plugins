@@ -1,5 +1,8 @@
 package cn.jvmaster.core.exception;
 
+import cn.jvmaster.core.constant.Code;
+import cn.jvmaster.core.constant.Constant;
+
 /**
  * 系统异常定义
  * @author AI
@@ -8,23 +11,41 @@ package cn.jvmaster.core.exception;
 **/
 public class SystemException extends RuntimeException {
 
-    public SystemException() {
-        super();
+    private final int code;
+
+    public SystemException(int code) {
+        this.code = code;
     }
 
     public SystemException(String message) {
+        this(Code.ERROR, message);
+    }
+
+    public SystemException(Constant<Integer> code) {
+        this.code = code.getCode();
+    }
+
+    public SystemException(Constant<Integer> code, String message) {
         super(message);
+        this.code = code.getCode();
     }
 
-    public SystemException(String message, Throwable cause) {
+    public SystemException(Constant<Integer> code, String message, Throwable cause) {
         super(message, cause);
+        this.code = code.getCode();
     }
 
-    public SystemException(Throwable cause) {
+    public SystemException(Constant<Integer> code, Throwable cause) {
         super(cause);
+        this.code = code.getCode();
     }
 
-    protected SystemException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+    public SystemException(Constant<Integer> code, String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
+        this.code = code.getCode();
+    }
+
+    public int getCode() {
+        return code;
     }
 }

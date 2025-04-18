@@ -1,11 +1,39 @@
 plugins {
-    id 'java-library'
-    id 'io.spring.dependency-management' version '1.1.3'
-    id 'maven-publish'
+    id 'io.spring.dependency-management' apply false
+    id 'org.springframework.boot' apply false
 }
 
-tasks.withType(JavaCompile) {
-    options.encoding = 'UTF-8'
+ext {
+  PROJECT_GROUP = 'cn.jvmaster'
+  PROJECT_VERSION = '1.0.02-snapshot'
+  JAVA_VERSION = JavaVersion.VERSION_21
+  // '1.0.0-RELEASE'
+
+  // 依赖jar版本管理
+  JUNIT_JAR_VERSION = '5.9.0'
+  // jackson版本
+  JACKSON_VERSION = '2.18.3'
+  //
+  OSHI_VERSION = '6.6.5'
+  // 验证码
+  CAPTCHA_VERSION = '1.6.2'
+}
+
+allprojects {
+    tasks.withType(JavaCompile) {
+      options.encoding = 'UTF-8'
+    }
+
+    tasks.withType(Javadoc) {
+        options.addStringOption('Xdoclint:none', '-quiet')
+        options.addStringOption('encoding', 'UTF-8')
+    }
+
+    tasks.withType(JavaExec) {
+        standardOutput = System.out
+        errorOutput = System.err
+        ignoreExitValue = true // 避免非零退出码影响构建流程
+    }
 }
 
 subprojects {
@@ -13,16 +41,31 @@ subprojects {
     apply plugin: 'maven-publish'
     apply plugin: 'io.spring.dependency-management'
 
+    if (project.name != 'core') {
+        apply plugin: 'org.springframework.boot'
+    }
+
     // 版本配置
-    group = 'cn.jvmaster'
-//     version = '1.0.0-RELEASE'
-    version = '1.0.01-snapshot'
+    group = PROJECT_GROUP
+    version = PROJECT_VERSION
+
+    // 依赖的版本管理
+    dependencyManagement {
+        dependencies {
+          dependency "com.github.oshi:oshi-core:${OSHI_VERSION}"
+          dependency "com.fasterxml.jackson.core:jackson-databind:${JACKSON_VERSION}"
+          dependency "com.fasterxml.jackson.datatype:jackson-datatype-jdk8:${JACKSON_VERSION}"
+          dependency "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${JACKSON_VERSION}"
+          dependency "com.fasterxml.jackson.module:jackson-module-parameter-names:${JACKSON_VERSION}"
+          dependency "com.github.whvcse:easy-captcha:${CAPTCHA_VERSION}"
+        }
+    }
 
     // 通用编译配置
     java {
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
-   //     withJavadocJar()
+        sourceCompatibility = JAVA_VERSION
+        targetCompatibility = JAVA_VERSION
+        withJavadocJar()
         withSourcesJar()
     }
 
@@ -48,26 +91,25 @@ subprojects {
     		mavenCentral()
     }
 
-    // 使用 dependencyManagement 管理依赖的版本
-
-    dependencyManagement {
-        imports {
-
-        }
-    }
-
     // 公共依赖管理
     dependencies {
-        implementation "com.fasterxml.jackson.core:jackson-databind:2.18.1"
-        testImplementation 'org.junit.jupiter:junit-jupiter:5.9.0'
+        testImplementation "org.junit.jupiter:junit-jupiter:${JUNIT_JAR_VERSION}"
     }
 
     // 通用发布配置
     publishing {
         publications {
             mavenJava(MavenPublication) {
-                //version = project.ext.PROJECT_INFO_VERSION
                 from components.java
+
+                versionMapping {
+                    usage('java-api') {
+                        fromResolutionOf('runtimeClasspath')
+                    }
+                    usage('java-runtime') {
+                        fromResolutionResult()
+                    }
+                }
 
                 pom {
                     name = 'spring plugins'
@@ -125,12 +167,41 @@ subprojects {
     }
 }
 
-tasks.withType(JavaExec) {
-    standardOutput = System.out
-    errorOutput = System.err
-    ignoreExitValue = true // 避免非零退出码影响构建流程
-}
-
 task publishAll {
     dependsOn subprojects*.publish
+}
+
+tasks.register('aggregateJavadoc', Javadoc) {
+    group = 'documentation'
+    description = 'Generates unified Javadoc for all subprojects.'
+    destinationDir = file("$buildDir/docs/javadoc")
+
+    options.encoding = 'UTF-8'
+    options.memberLevel = JavadocMemberLevel.PROTECTED
+    options.author = true
+    options.version = true
+    options.addStringOption('Xdoclint:none', '-quiet')
+    options.addStringOption('encoding', 'UTF-8')
+    options.links("https://docs.oracle.com/javase/8/docs/api/")
+
+    // 使用 provider 延迟配置，但在配置阶段就通知 Gradle“我有 source”
+    def collectedSources = project.files().asFileTree
+    def collectedClasspath = project.files()
+
+    subprojects.each { p ->
+        if (p.plugins.hasPlugin('java')) {
+            def javaSource = p.sourceSets.main.allJava
+            if (!javaSource.isEmpty()) {
+                println "✅ 收集模块: ${p.name}（${javaSource.files.size()} 个源文件）"
+                collectedSources += javaSource
+                collectedClasspath += p.sourceSets.main.compileClasspath
+            } else {
+                println "⚠️ 模块 ${p.name} 无源码，跳过"
+            }
+        }
+    }
+
+    // 告诉 Gradle：“我有这些源文件！”
+    source = collectedSources
+    classpath = collectedClasspath
 }

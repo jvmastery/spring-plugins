@@ -1,7 +1,7 @@
 package cn.jvmaster.redis.serializer;
 
 import cn.jvmaster.core.util.StringUtils;
-import cn.jvmaster.redis.constant.Constant;
+import cn.jvmaster.redis.constant.CacheConstant;
 import java.nio.charset.StandardCharsets;
 import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.data.redis.serializer.SerializationException;
@@ -29,12 +29,12 @@ public class RedisKeySerializer implements RedisSerializer<Object> {
 
     @Override
     public byte[] serialize(Object key) throws SerializationException {
-        if (key == null || key.equals("")) {
+        if (key == null || "".equals(key)) {
             return null;
         }
 
         // 转换成字符型
-        String cacheKey = StringUtils.isEmpty(cacheKeyPrefix) ? key.toString() : cacheKeyPrefix + Constant.SEPARATOR + key;
+        String cacheKey = StringUtils.isEmpty(cacheKeyPrefix) ? key.toString() : cacheKeyPrefix + CacheConstant.SEPARATOR + key;
         return cacheKey.getBytes(StandardCharsets.UTF_8);
     }
 

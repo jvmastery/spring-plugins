@@ -7,7 +7,7 @@ package cn.jvmaster.redis.constant;
  * @date 2024/11/25 17:08
  * @version 1.0
 **/
-public interface Constant {
+public interface CacheConstant {
 
     /**
      * 缓存分隔符

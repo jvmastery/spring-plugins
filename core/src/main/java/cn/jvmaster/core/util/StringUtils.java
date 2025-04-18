@@ -1,6 +1,6 @@
 package cn.jvmaster.core.util;
 
-import cn.jvmaster.core.exception.SystemException;
+import cn.jvmaster.core.constant.DateTimeFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JavaType;
@@ -21,23 +21,22 @@ import java.util.List;
 public class StringUtils {
     private StringUtils() {}
 
-    private static final ObjectMapper objectMapper = new ObjectMapper();
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
-    private static final String DEFAULT_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
     static {
-        objectMapper.setDateFormat(new SimpleDateFormat(DEFAULT_DATE_FORMAT));
-        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        OBJECT_MAPPER.setDateFormat(new SimpleDateFormat(DateTimeFormat.NORMAL_DATETIME));
+        OBJECT_MAPPER.setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
         // 反序列化配置
-        objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-        objectMapper.disable(DeserializationFeature.FAIL_ON_INVALID_SUBTYPE);
-        objectMapper.disable(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES);
-        objectMapper.disable(DeserializationFeature.FAIL_ON_MISSING_CREATOR_PROPERTIES);
-        objectMapper.disable(DeserializationFeature.FAIL_ON_UNRESOLVED_OBJECT_IDS);
+        OBJECT_MAPPER.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+        OBJECT_MAPPER.disable(DeserializationFeature.FAIL_ON_INVALID_SUBTYPE);
+        OBJECT_MAPPER.disable(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES);
+        OBJECT_MAPPER.disable(DeserializationFeature.FAIL_ON_MISSING_CREATOR_PROPERTIES);
+        OBJECT_MAPPER.disable(DeserializationFeature.FAIL_ON_UNRESOLVED_OBJECT_IDS);
 
         // 序列化配置
-        objectMapper.enable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
+        OBJECT_MAPPER.enable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
 
         /*
           JsonTypeInfo.As.PROPERTY（类型信息的嵌入方式） 作用： 指定类型信息在 JSON 中的表示形式。
@@ -46,13 +45,13 @@ public class StringUtils {
             - WRAPPER_ARRAY：类型信息作为包装数组。
             - EXTERNAL_PROPERTY：类型信息作为外部属性（适用于属性嵌套）。
             - EXISTING_PROPERTY：类型信息嵌入到已有属性中。
-          ObjectMapper.DefaultTyping.NON_FINAL（类型适用范围）  指定哪些类型需要写入类型信息。
+          OBJECT_MAPPER.DefaultTyping.NON_FINAL（类型适用范围）  指定哪些类型需要写入类型信息。
             - NON_CONCRETE_AND_ARRAYS：非具体类型（如接口、抽象类）以及数组类型需要写入类型信息。
             - OBJECT_AND_NON_CONCRETE：Object 类型和非具体类型需要写入类型信息。
             - NON_FINAL（此示例使用）：非最终类（final）需要写入类型信息。
             - EVERYTHING：所有类型都会写入类型信息。
          */
-//        objectMapper.activateDefaultTyping(LaissezFaireSubTypeValidator.instance, ObjectMapper.DefaultTyping.NON_FINAL, JsonTypeInfo.As.PROPERTY);
+//        OBJECT_MAPPER.activateDefaultTyping(LaissezFaireSubTypeValidator.instance, OBJECT_MAPPER.DefaultTyping.NON_FINAL, JsonTypeInfo.As.PROPERTY);
     }
 
     /**
@@ -123,7 +122,7 @@ public class StringUtils {
      * @return 如果是以指定字符串结束，则返回true
      */
     public static boolean endWith(CharSequence str, CharSequence suffix) {
-        return startWith(str, suffix, false);
+        return endWith(str, suffix, false);
     }
 
     /**
@@ -153,21 +152,86 @@ public class StringUtils {
     }
 
     /**
+     * 字符串替换
+     * @param str       处理字符串
+     * @param searchStr 待替换字符串
+     * @param replacement   替换后的字符
+     * @return  新的字符串
+     */
+    public static String replace(String str, String searchStr, String replacement) {
+        if (isEmpty(str) || isEmpty(searchStr)) {
+            return str;
+        }
+
+        final StringBuilder sb = new StringBuilder(str.length());
+        int pos = 0;
+        int index = str.indexOf(searchStr);
+
+        for(int patLen = searchStr.length(); index >= 0; index = str.indexOf(searchStr, pos)) {
+            sb.append(str, pos, index);
+            sb.append(replacement);
+            pos = index + patLen;
+        }
+
+        sb.append(str, pos, str.length());
+        return sb.toString();
+    }
+
+    /**
+     * 判断2个字符串是否相等
+     * @param str1  字符串1
+     * @param str2  字符串2
+     * @return  boolean
+     */
+    public static boolean equals(String str1, String str2) {
+        return str1 != null && str1.equals(str2);
+    }
+
+    /**
+     * 将第一个字符大小写转换
+     * @param str   字符
+     * @param capitalize    是否转换为大小
+     * @return String
+     */
+    public static String changeFirstCase(String str, boolean capitalize) {
+        if (isEmpty(str)) {
+            return str;
+        }
+
+        char baseChar = str.charAt(0);
+        char updatedChar;
+        if (capitalize) {
+            updatedChar = Character.toUpperCase(baseChar);
+        } else {
+            updatedChar = Character.toLowerCase(baseChar);
+        }
+
+        if (baseChar == updatedChar) {
+            return str;
+        } else {
+            char[] chars = str.toCharArray();
+            chars[0] = updatedChar;
+            return new String(chars);
+        }
+    }
+
+    /**
      * 字符串转对象
      * @param str 待转换json字符串
      * @param clazz 转换后的对象
      * @return 指定对象
      * @param <T>   对象类型
      */
+    @SuppressWarnings("unchecked")
     public static <T> T parseStrToObj(String str, Class<T> clazz) {
         if(StringUtils.isEmpty(str) || clazz == null) {
             return null;
         }
 
         try {
-            return clazz.equals(String.class) ? (T) str : objectMapper.readValue(str, clazz);
+            return clazz.equals(String.class) ? (T) str : OBJECT_MAPPER.readValue(str, clazz);
         } catch (Exception e) {
-            throw new SystemException(e.getMessage(), e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -179,16 +243,17 @@ public class StringUtils {
      * @return  指定对象
      * @param <T> 对象类型
      */
+    @SuppressWarnings("unchecked")
     public static <T> T parseStrToObj(String str, Class<T> clazz, Class<?> innerJavaType) {
         if(StringUtils.isEmpty(str) || clazz == null) {
             return null;
         }
 
         try {
-            JavaType javaType = objectMapper.getTypeFactory().constructParametricType(clazz, innerJavaType);
-            return clazz.equals(String.class) ? (T) str : objectMapper.readValue(str, javaType);
+            JavaType javaType = OBJECT_MAPPER.getTypeFactory().constructParametricType(clazz, innerJavaType);
+            return clazz.equals(String.class) ? (T) str : OBJECT_MAPPER.readValue(str, javaType);
         } catch (Exception e) {
-            throw new SystemException(e.getMessage(), e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -206,9 +271,9 @@ public class StringUtils {
 
         try {
 
-            return objectMapper.readValue(str, objectMapper.getTypeFactory().constructCollectionType(ArrayList.class, clazz));
+            return OBJECT_MAPPER.readValue(str, OBJECT_MAPPER.getTypeFactory().constructCollectionType(ArrayList.class, clazz));
         } catch (Exception e) {
-            throw new SystemException(e.getMessage(), e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -223,12 +288,11 @@ public class StringUtils {
         }
 
         try {
-            return objectMapper.readTree(str);
+            return OBJECT_MAPPER.readTree(str);
         } catch (Exception e) {
-            throw new SystemException(e.getMessage(), e);
+            throw new RuntimeException(e);
         }
     }
-
 
     /**
      * 将对象装换为字符串
@@ -238,18 +302,18 @@ public class StringUtils {
      */
     public static <T> String toString(T entity) {
         try {
-            return objectMapper.writeValueAsString(entity);
+            return OBJECT_MAPPER.writeValueAsString(entity);
         } catch (Exception e) {
-            throw new SystemException(e.getMessage(), e);
+            throw new RuntimeException(e);
         }
     }
 
     /**
-     * 返回ObjectMapper对象
-     * @return  ObjectMapper对象
+     * 返回OBJECT_MAPPER对象
+     * @return  OBJECT_MAPPER对象
      */
     public static ObjectMapper getObjectMapper() {
-        return objectMapper;
+        return OBJECT_MAPPER;
     }
 
 }

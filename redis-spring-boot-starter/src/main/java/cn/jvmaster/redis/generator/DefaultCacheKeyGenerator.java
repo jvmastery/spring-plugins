@@ -1,6 +1,6 @@
 package cn.jvmaster.redis.generator;
 
-import cn.jvmaster.redis.constant.Constant;
+import cn.jvmaster.redis.constant.CacheConstant;
 import java.util.Arrays;
 import org.aspectj.lang.reflect.MethodSignature;
 
@@ -17,9 +17,9 @@ public class DefaultCacheKeyGenerator implements CacheKeyGenerator {
         Object argsKey = generateKey(args);
 
         return target.getClass().getName()
-            + Constant.SEPARATOR
+            + CacheConstant.SEPARATOR
             + method.getName()
-            + (argsKey == null ? "" : Constant.SEPARATOR + argsKey);
+            + (argsKey == null ? "" : CacheConstant.SEPARATOR + argsKey);
     }
 
     /**

@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity5">
+<head>
+    <title th:text="${title} ?: '统一认证平台'">统一认证平台</title>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatib le" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <link rel="stylesheet" href="../static/css/normalize.css" th:href="@{/css/normalize.css}" />
+    <link rel="stylesheet" href="../static/css/login.css" th:href="@{/css/login.css}" />
+</head>
+<body>
+    <div id="app" class="login-container">
+        <form class="login-form">
+            <h2>登 录</h2>
+            <el-input class="form-item" v-model="username" ref="usernameRef" placeholder="用户名"></el-input>
+            <el-input
+                class="form-item"
+                ref="passwordRef"
+                v-model="password"
+                type="password"
+                placeholder="密码"
+                show-password
+                autocomplete="new-password"
+            ></el-input>
+
+<!--            <input th:each="entry : ${hiddenInputs}" type="hidden" th:name="${entry.key}" th:value="${entry.value}" />-->
+            <el-button type="primary" plain @click.enter="login">登录</el-button>
+        </form>
+    </div>
+ 7
+      <script src="https://unpkg.com/vue@3.4.21/dist/vue.global.js" th:src="@{/js/vue/3.4.21/vue.global.js}"></script>
+    <link rel="stylesheet" href="https://unpkg.com/element-plus@2.6.1/dist/index.css" th:href="@{/js/element-plus/2.6.1/index.css}"></link>
+    <script src="https://unpkg.com/element-plus@2.6.1/dist/index.full.js" th:src="@{/js/element-plus/2.6.1/index.full.js}"></script>
+    <script src="https://unpkg.com/axios@1.6.8/dist/axios.min.js" th:src="@{/js/axios/1.6.8/axios.min.js}"></script>
+
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+
+        var loginUrl = /*[[@{/login}]]*/ '';
+        const hiddenInputs = [[${hiddenInputs}]]
+
+        /*]]>*/
+
+        const {createApp , ref } = Vue
+        createApp({
+            setup() {
+                const username = ref('')
+                const password = ref('')
+
+                const usernameRef = ref(null)
+                const passwordRef = ref(null)
+
+                /**
+                 * 重新加载页面
+                 */
+                const reloadPage = () => {
+                    setTimeout(() => {
+                        location.reload()
+                    }, 2000)
+                }
+
+                /**
+                 * 登录接口
+                 */
+                const login = () => {
+                    if (username.value == '') {
+                        ElementPlus.ElMessage({
+                            message: '用户名不能为空',
+                            type: 'warning'
+                        })
+                        usernameRef.value.focus()
+                        return
+                    }
+
+                    if (password.value == '') {
+                        ElementPlus.ElMessage({
+                            message: '密码不能为空',
+                            type: 'warning'
+                        })
+                        passwordRef.value.focus()
+                        return
+                    }
+
+                    // 提交表单信息
+                    const formData = {}
+                    formData.username = username.value
+                    formData.password = password.value
+
+                    // 添加隐藏字段
+                    for (var key in hiddenInputs) {
+                        formData[key] = hiddenInputs[key]
+                    }
+
+                    axios.post(loginUrl, formData, {
+                        headers: {
+                            'Content-Type': 'multipart/form-data'
+                        }
+                    }).then(resp => {
+                        console.log(resp)
+                        const result = resp.data
+                        switch (result.code) {
+                            case 0:
+                                // 请求成功
+                                break;
+                            case 2010:
+                                // invalid csrf
+                                ElementPlus.ElMessage.warning('页面已经过期，刷新后重新尝试')
+                                reloadPage()
+                                break
+                            default:
+                                ElementPlus.ElMessage({
+                                    message: result.msg,
+                                    type: 'error'
+                                })
+                        }
+                    }).catch(error => {
+                        console.error(error)
+                    })
+                }
+
+                return {
+                    username,
+                    password,
+                    usernameRef,
+                    passwordRef,
+                    login
+                }
+            }
+        }).use(ElementPlus).mount('#app')
+        // new Vue({
+        //     el: '#app',
+        //     data() {
+        //         return {
+        //             // 点击登录后禁止登录按钮
+        //             disableLoginButton: false,
+        //             // 登录数据
+        //             form: {
+        //                 username: '',
+        //                 password: ''
+        //             }
+        //         }
+        //     },
+        //     methods: {
+        //         /**
+        //          *  请求登录
+        //          */
+        //         login() {
+        //             // 数据核验
+        //             if(this.form.username == '') {
+        //                 this.$message.warning('用户名不能为空');
+        //                 this.$refs.username.focus();
+        //                 return;
+        //             }
+        //
+        //             if(this.form.password == '') {
+        //                 this.$message.warning('用户密码不能为空');
+        //                 this.$refs.password.focus();
+        //                 return;
+        //             }
+        //
+        //             this.submit();
+        //         },
+        //         /**
+        //          * 发送登录请求
+        //          */
+        //         submit() {
+        //             const request = axios.create({
+        //                 timeout: 10000,
+        //                 maxRedirects: 0
+        //             });
+        //
+        //             // 响应回调处理
+        //             let _this = this;
+        //             request.interceptors.response.use(function (response) {
+        //                 const result = response.data;
+        //
+        //                 // 登录成功
+        //                 if(result.code == 0) {
+        //                     return result.data;
+        //                 }
+        //
+        //                 _this.$message.error(result.msg);
+        //                 return Promise.reject(result.msg);
+        //             });
+        //
+        //             // 请求参数
+        //             const params = {
+        //                 a: this.form.username,
+        //                 b: this.form.password
+        //             };
+        //
+        //             params.sign = "";
+        //
+        //             // 发送请求
+        //             request.post('/authentication', params, {
+        //                 'Content-Type': 'application/x-www-form-urlencoded',
+        //                 transformRequest: [data => {
+        //                     let formData = new FormData()
+        //                     for(let key in data){
+        //                         formData.append(key, data[key])
+        //                     }
+        //                     return formData
+        //                 }],
+        //             }).then(resp => {
+        //                 location.replace(resp);
+        //             })
+        //         }
+        //     }
+        // });
+
+    </script>
+</body>
+</html>
