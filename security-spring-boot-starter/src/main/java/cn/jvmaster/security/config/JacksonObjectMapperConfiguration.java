@@ -1,6 +1,8 @@
 package cn.jvmaster.security.config;
 
 import cn.jvmaster.security.mixin.AuthorizationGrantTypeMixin;
+import cn.jvmaster.security.mixin.GrantedAuthorityMixin;
+import cn.jvmaster.security.mixin.UsernamePasswordAuthenticationTokenMixin;
 import cn.jvmaster.security.serializer.PersistentRememberMeTokenDeserializer;
 import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -9,6 +11,9 @@ import jakarta.annotation.PostConstruct;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.jackson2.SecurityJackson2Modules;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.server.authorization.jackson2.OAuth2AuthorizationServerJackson2Module;
@@ -32,6 +37,8 @@ public class JacksonObjectMapperConfiguration {
     @PostConstruct
     public void config() {
         objectMapper.addMixIn(AuthorizationGrantType.class, AuthorizationGrantTypeMixin.class);
+        objectMapper.addMixIn(SimpleGrantedAuthority.class, GrantedAuthorityMixin.class);
+        objectMapper.addMixIn(UsernamePasswordAuthenticationToken.class, UsernamePasswordAuthenticationTokenMixin.class);
 
         ClassLoader classLoader = JacksonObjectMapperConfiguration.class.getClassLoader();
         List<Module> securityModules = SecurityJackson2Modules.getModules(classLoader);

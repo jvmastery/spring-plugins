@@ -10,7 +10,7 @@ import org.springframework.security.core.userdetails.UserDetails;
  * @date 2024/3/28 14:37
  * @version 1.0
 **/
-public record AuthorizationUser(Long id,
+public record AuthorizationUser(Object id,
                                 String username,
                                 String password,
                                 Collection<? extends GrantedAuthority> authorities) implements UserDetails {

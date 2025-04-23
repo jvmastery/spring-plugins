@@ -1,7 +1,7 @@
 package cn.jvmaster.redis.generator.processor;
 
 import cn.jvmaster.core.util.RandomUtils;
-import cn.jvmaster.redis.annotation.Cache;
+import cn.jvmaster.redis.CacheContext;
 import cn.jvmaster.redis.generator.CacheProcessor;
 import cn.jvmaster.redis.service.HashRedisOperationService;
 import java.time.Duration;
@@ -28,12 +28,12 @@ public class DefaultHashCacheProcessor implements CacheProcessor {
     }
 
     @Override
-    public Object get(String cacheName, Cache cache) {
+    public Object get(String cacheName, CacheContext cache) {
         return hashRedisOperationService.get(cacheName);
     }
 
     @Override
-    public void save(String cacheName, Object value, Cache cache) {
-        hashRedisOperationService.set(cacheName, (Map<?, ?>) value, Duration.ofSeconds(cache.expire() + RandomUtils.random(100L)), true);
+    public void save(String cacheName, Object value, CacheContext cache) {
+        hashRedisOperationService.set(cacheName, (Map<?, ?>) value, Duration.ofSeconds(cache.cache().expire() + RandomUtils.random(100L)), true);
     }
 }

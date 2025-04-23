@@ -1,5 +1,6 @@
 package cn.jvmaster.security;
 
+import cn.jvmaster.redis.service.RedisOperationService;
 import cn.jvmaster.redis.starter.EnableRedis;
 import cn.jvmaster.redis.starter.RedisProperties;
 import cn.jvmaster.security.authentication.OAuth2PasswordAuthenticationProvider;
@@ -12,6 +13,7 @@ import cn.jvmaster.security.handler.RequestAccessDeniedHandler;
 import cn.jvmaster.security.service.RedisOAuth2AuthorizationConsentService;
 import cn.jvmaster.security.service.RedisOAuth2AuthorizationService;
 import cn.jvmaster.security.service.RedisRememberMePersistentTokenRepository;
+import cn.jvmaster.security.service.SecurityUserDetailsService;
 import cn.jvmaster.security.token.RedisTokenGenerator;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -20,6 +22,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationConsent;
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationConsentService;
@@ -147,5 +150,16 @@ public class SecurityAutoConfiguration {
     @ConditionalOnMissingBean
     public AccessDeniedHandler accessDeniedHandler() {
         return new RequestAccessDeniedHandler();
+    }
+
+    /**
+     * 定义用户信息获取接口
+     * @return UserDetailsService
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnBean(UserCustomizer.class)
+    public UserDetailsService userDetailsService(UserCustomizer<?> customizer, RedisOperationService<Object> redisOperationService) {
+        return new SecurityUserDetailsService(customizer, redisOperationService);
     }
 }

@@ -10,7 +10,10 @@ public enum Code implements Constant<Integer> {
     ERROR(-1, "系统错误"),
     OK(200, "操作成功"),
 
-    LOGIN_ERROR_CAPTCHA(1001, "验证码错误")
+    LOGIN_ERROR_CAPTCHA(1001, "验证码错误"),
+
+    // 用户异常信息
+    USER_NOT_LOGIN(10001, "用户信息获取失败，需重新登录"),
     ;
 
     private final int code;

@@ -14,12 +14,9 @@ import org.springframework.data.redis.core.types.Expiration;
  * @date 2024/12/11 14:14
  * @version 1.0
 **/
-public class StringRedisOperationService extends AbstractRedisOperationService<Object> {
+public class StringRedisOperationService<T> extends AbstractRedisOperationService<T> {
 
-
-
-
-    public StringRedisOperationService(RedisTemplate<String, Object> redisTemplate) {
+    public StringRedisOperationService(RedisTemplate<String, T> redisTemplate) {
         super(redisTemplate);
     }
 
@@ -28,7 +25,7 @@ public class StringRedisOperationService extends AbstractRedisOperationService<O
      * @param key   缓存key
      * @return  缓存内容
      */
-    public Object get(String key) {
+    public T get(String key) {
         return redisTemplate.opsForValue().get(key);
     }
 
@@ -37,7 +34,7 @@ public class StringRedisOperationService extends AbstractRedisOperationService<O
      * @param key   缓存key
      * @param value 缓存内容
      */
-    public void set(String key, Object value) {
+    public void set(String key, T value) {
         redisTemplate.opsForValue().set(key, value);
     }
 
@@ -47,7 +44,7 @@ public class StringRedisOperationService extends AbstractRedisOperationService<O
      * @param value 缓存内容
      * @param duration  缓存有效时间
      */
-    public void setEx(String key, Object value, Duration duration) {
+    public void setEx(String key, T value, Duration duration) {
         redisTemplate.opsForValue().set(key, value, duration);
     }
 
@@ -59,7 +56,7 @@ public class StringRedisOperationService extends AbstractRedisOperationService<O
      */
     public boolean lock(String key, Object value, Duration expireTime) {
         Boolean result = (Boolean) redisTemplate.execute((RedisCallback<Object>) connection -> connection.stringCommands().set(serializeKey(key),
-            serializeValue(value),
+            serialize(value, redisTemplate.getValueSerializer()),
             Expiration.seconds(expireTime.getSeconds()),
             SetOption.SET_IF_ABSENT));
 

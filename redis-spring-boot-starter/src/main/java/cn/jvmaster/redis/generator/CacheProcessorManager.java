@@ -1,6 +1,7 @@
 package cn.jvmaster.redis.generator;
 
 import cn.jvmaster.core.util.StringUtils;
+import cn.jvmaster.redis.CacheContext;
 import cn.jvmaster.redis.annotation.Cache;
 import cn.jvmaster.redis.annotation.CacheRemove;
 import cn.jvmaster.redis.constant.Mode;
@@ -63,6 +64,7 @@ public class CacheProcessorManager {
         }
 
         // 判断是否存在对应的缓存
+        CacheContext cacheContext = new CacheContext(cache, target, signature, args);
         boolean cacheExist = cache.mode().equals(Mode.NORMAL) ? redisTemplate.hasKey(cacheName) : false;
         if (!cacheExist) {
             // 不存在
@@ -71,11 +73,11 @@ public class CacheProcessorManager {
                 return null;
             }
 
-            cacheProcessor.save(cacheName, result, cache);
+            cacheProcessor.save(cacheName, result, cacheContext);
         }
 
         // 存在，返回对应的缓存结果
-        return cacheProcessor.get(cacheName, cache);
+        return cacheProcessor.get(cacheName, cacheContext);
     }
 
     /**

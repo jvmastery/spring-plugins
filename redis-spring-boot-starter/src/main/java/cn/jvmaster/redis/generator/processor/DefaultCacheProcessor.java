@@ -1,6 +1,7 @@
 package cn.jvmaster.redis.generator.processor;
 
 import cn.jvmaster.core.util.RandomUtils;
+import cn.jvmaster.redis.CacheContext;
 import cn.jvmaster.redis.annotation.Cache;
 import cn.jvmaster.redis.generator.CacheProcessor;
 import cn.jvmaster.redis.service.StringRedisOperationService;
@@ -19,7 +20,7 @@ public class DefaultCacheProcessor implements CacheProcessor {
 
     private final StringRedisOperationService stringRedisOperationService;
 
-    public DefaultCacheProcessor(StringRedisOperationService stringRedisOperationService) {
+    public DefaultCacheProcessor(StringRedisOperationService<?> stringRedisOperationService) {
         this.stringRedisOperationService = stringRedisOperationService;
     }
 
@@ -29,13 +30,13 @@ public class DefaultCacheProcessor implements CacheProcessor {
     }
 
     @Override
-    public Object get(String cacheName, Cache cache) {
+    public Object get(String cacheName, CacheContext cache) {
         return stringRedisOperationService.get(cacheName);
     }
 
     @Override
-    public void save(String cacheName, Object value, Cache cache) {
+    public void save(String cacheName, Object value, CacheContext cache) {
         // 加个时间，防止缓存雪崩
-        stringRedisOperationService.setEx(cacheName, value, Duration.ofSeconds(cache.expire() + RandomUtils.random(100L)));
+        stringRedisOperationService.setEx(cacheName, value, Duration.ofSeconds(cache.cache().expire() + RandomUtils.random(100L)));
     }
 }

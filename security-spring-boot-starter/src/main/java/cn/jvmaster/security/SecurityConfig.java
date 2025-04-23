@@ -2,8 +2,12 @@ package cn.jvmaster.security;
 
 import cn.jvmaster.security.authentication.OAuth2PasswordAuthenticationConverter;
 import cn.jvmaster.security.authentication.OAuth2PasswordAuthenticationProvider;
+import cn.jvmaster.security.filter.AnonymousAccessFilter;
 import cn.jvmaster.security.filter.CaptchaValidationFilter;
 import cn.jvmaster.security.handler.RememberMeAuthenticationSuccessHandler;
+import java.util.List;
+import java.util.Optional;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.MediaType;
@@ -14,16 +18,20 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationService;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configurers.OAuth2AuthorizationServerConfigurer;
 import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings;
+import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings.Builder;
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenGenerator;
 import org.springframework.security.oauth2.server.resource.introspection.OpaqueTokenIntrospector;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
+import org.springframework.security.web.access.intercept.AuthorizationFilter;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
+import org.springframework.web.servlet.HandlerMapping;
+import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 /**
  * spring authorization 配置
@@ -33,11 +41,19 @@ import org.springframework.security.web.util.matcher.RequestMatcher;
 **/
 @EnableWebSecurity
 public class SecurityConfig {
-
     private final SecurityProperties securityProperties;
+    private final Optional<List<SecurityCustomizer>> customizerList;
+    private final List<OpenIpCustomizer> openIpCustomizerList;
+    private final RequestMappingHandlerMapping handlerMapping;
 
-    public SecurityConfig(SecurityProperties securityProperties) {
+    public SecurityConfig(SecurityProperties securityProperties,
+                                    Optional<List<SecurityCustomizer>> customizers,
+                                    List<OpenIpCustomizer> openIpCustomizerList,
+                                    RequestMappingHandlerMapping handlerMapping) {
         this.securityProperties = securityProperties;
+        this.customizerList = customizers;
+        this.openIpCustomizerList = openIpCustomizerList;
+        this.handlerMapping = handlerMapping;
     }
 
     /**
@@ -103,6 +119,8 @@ public class SecurityConfig {
                     }))
         ;
 
+        customizerList.ifPresent(securityCustomizers ->
+            securityCustomizers.forEach(securityCustomizer -> securityCustomizer.customize(http, authorizationServerConfigurer)));
         return http.build();
     }
 
@@ -146,6 +164,7 @@ public class SecurityConfig {
                         oAuth2ResourceServerConfigurer.opaqueToken(opaqueTokenConfigurer -> {
                             opaqueTokenConfigurer.introspector(opaqueTokenIntrospector);
                         }))
+
         ;
 
         if (securityProperties.getLogin() != null) {
@@ -153,13 +172,19 @@ public class SecurityConfig {
                 http.addFilterBefore(new CaptchaValidationFilter("/login"), UsernamePasswordAuthenticationFilter.class);
             }
         }
+        http.addFilterBefore(new AnonymousAccessFilter(handlerMapping, openIpCustomizerList), AuthorizationFilter.class);
 
+        // 对外暴露，提供修改的可能
+        customizerList.ifPresent(securityCustomizers ->
+            securityCustomizers.forEach(securityCustomizer -> securityCustomizer.customize(http)));
         return http.build();
     }
 
     @Bean
+    @ConditionalOnMissingBean
     public AuthorizationServerSettings authorizationServerSettings() {
-        return AuthorizationServerSettings.builder().build();
+        Builder builder = AuthorizationServerSettings.builder();
+        return builder.build();
     }
 
     /**

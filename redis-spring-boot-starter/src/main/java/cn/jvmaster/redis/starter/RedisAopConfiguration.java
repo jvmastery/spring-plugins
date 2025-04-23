@@ -33,13 +33,13 @@ import org.springframework.context.annotation.Configuration;
 public class RedisAopConfiguration {
 
     private static final Logger log = LoggerFactory.getLogger(RedisAopConfiguration.class);
-    private final RedisOperationService redisOperationService;
+    private final RedisOperationService<?> redisOperationService;
 
     private final CacheKeyGenerator cacheKeyGenerator;
 
     private final CacheProcessorManager cacheProcessorManager;
 
-    public RedisAopConfiguration(RedisOperationService redisOperationService, CacheKeyGenerator cacheKeyGenerator, CacheProcessorManager cacheProcessorManager) {
+    public RedisAopConfiguration(RedisOperationService<?> redisOperationService, CacheKeyGenerator cacheKeyGenerator, CacheProcessorManager cacheProcessorManager) {
         this.redisOperationService = redisOperationService;
         this.cacheKeyGenerator = cacheKeyGenerator;
         this.cacheProcessorManager = cacheProcessorManager;

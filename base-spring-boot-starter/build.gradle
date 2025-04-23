@@ -2,6 +2,11 @@ dependencies {
     api project(":core")
     api 'org.springframework.boot:spring-boot-starter'
     api 'org.springframework.boot:spring-boot-autoconfigure'
+    api 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8'
+    api 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+    api 'com.fasterxml.jackson.module:jackson-module-parameter-names'
+    api 'org.springframework.boot:spring-boot-starter-web'
+
     annotationProcessor 'org.springframework.boot:spring-boot-autoconfigure-processor'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }

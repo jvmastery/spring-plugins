@@ -22,7 +22,6 @@ import org.springframework.security.oauth2.server.authorization.OAuth2Authorizat
 import org.springframework.security.oauth2.server.authorization.OAuth2TokenType;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
-import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -133,7 +132,7 @@ public class RedisOAuth2AuthorizationService implements OAuth2AuthorizationServi
 
         String oAuth2AuthorizationId = (String) redisTemplate.opsForValue().get(KEY + oAuth2AuthorizationTokenType.name() + CacheConstant.SEPARATOR + token);
         if (StringUtils.hasText(oAuth2AuthorizationId)) {
-            return getOAuth2Authorization((RedisOAuth2Authorization) redisTemplate.opsForValue().get(KEY + SecurityVariables.ID + CacheConstant.SEPARATOR + oAuth2AuthorizationId));
+            return findById(oAuth2AuthorizationId);
         }
 
         return null;

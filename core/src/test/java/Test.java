@@ -43,33 +43,28 @@ public class Test {
         // 构建树
 
 
-//        NaryTree<TestNode> naryTree = TreeFactory.build(new TestNode(0L, 0L),
-//            TestNode::getId,
-//            TestNode::getParentId,
-//            Comparator.comparingLong(TestNode::getPx),
-//            list
-//        );
-//        System.out.println(naryTree);
-
-        BinarySearchTree<Integer> binarySearchTree = new BinarySearchTree<>();
-        for (int i = 0; i < 100; i++) {
-            binarySearchTree.insert(RandomUtils.random(100));
-        }
-
-        System.out.println();
-
-//        Tree<Node<Long>> testNodeTree = TreeFactory.build(list);
-//        System.out.println(testNodeTree);
-//        String s = StringUtils.toString(naryTree);
-//        System.out.println(s);
-//        naryTree.postOrderTraverse(item -> {
-//            List<? extends TreeNode<TestNode>> children = item.getChildren();
-//        });
-
-//        Tree<Integer> tree = TreeFactory.build(0, item -> item, map::get, Comparator.comparingInt(Integer::intValue), list1);
-//        System.out.println(tree);
-
-        Tree<Node<Long>> tree = TreeFactory.build(list);
+        NaryTree<TestNode> naryTree = TreeFactory.build(list);
+        System.out.println(naryTree);
+//
+//        BinarySearchTree<Integer> binarySearchTree = new BinarySearchTree<>();
+//        for (int i = 0; i < 100; i++) {
+//            binarySearchTree.insert(RandomUtils.random(100));
+//        }
+//
+//        System.out.println();
+//
+////        Tree<Node<Long>> testNodeTree = TreeFactory.build(list);
+////        System.out.println(testNodeTree);
+////        String s = StringUtils.toString(naryTree);
+////        System.out.println(s);
+////        naryTree.postOrderTraverse(item -> {
+////            List<? extends TreeNode<TestNode>> children = item.getChildren();
+////        });
+//
+////        Tree<Integer> tree = TreeFactory.build(0, item -> item, map::get, Comparator.comparingInt(Integer::intValue), list1);
+////        System.out.println(tree);
+//
+//        Tree<Node<Long>> tree = TreeFactory.build(list);
 
 //        naryTree.postOrderTraverse(item -> {
 //

@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.NullNode;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -213,6 +214,51 @@ public class StringUtils {
             chars[0] = updatedChar;
             return new String(chars);
         }
+    }
+
+    /**
+     * 拼接数组
+     * @param array         数组
+     * @param separator     拼接字符
+     * @return  拼接字符串
+     */
+    public static String join(Object[] array, String separator) {
+        if (array == null) {
+            return null;
+        }
+
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < array.length; i++) {
+            if (i > 0) {
+                sb.append(separator);
+            }
+            sb.append(array[i]);
+        }
+
+        return sb.toString();
+    }
+
+    /**
+     * 拼接集合
+     * @param array         数组
+     * @param separator     拼接字符
+     * @return  拼接字符串
+     */
+    public static String join(Collection<?> array, String separator) {
+        if (array == null) {
+            return null;
+        }
+
+        StringBuilder sb = new StringBuilder();
+        array.forEach(item -> {
+            if (!sb.isEmpty()) {
+                sb.append(separator);
+            }
+
+            sb.append(item);
+        });
+
+        return sb.toString();
     }
 
     /**

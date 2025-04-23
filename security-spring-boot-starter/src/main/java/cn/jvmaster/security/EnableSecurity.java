@@ -1,5 +1,6 @@
 package cn.jvmaster.security;
 
+import cn.jvmaster.security.config.JacksonObjectMapperConfiguration;
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -16,7 +17,7 @@ import org.springframework.context.annotation.Import;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@Import({ SecurityAutoConfiguration.class, SecurityConfig.class, SecurityRequestConfiguration.class })
+@Import({ JacksonObjectMapperConfiguration.class, SecurityAutoConfiguration.class, SecurityConfig.class, SecurityRequestConfiguration.class })
 public @interface EnableSecurity {
 
 }

@@ -10,7 +10,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 **/
 @ConfigurationProperties("spring.security")
 public class SecurityProperties {
-
     /**
      * 登录属性
      */

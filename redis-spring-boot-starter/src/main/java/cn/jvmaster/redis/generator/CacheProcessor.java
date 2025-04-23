@@ -1,5 +1,6 @@
 package cn.jvmaster.redis.generator;
 
+import cn.jvmaster.redis.CacheContext;
 import cn.jvmaster.redis.annotation.Cache;
 import org.aspectj.lang.reflect.MethodSignature;
 
@@ -29,7 +30,7 @@ public interface CacheProcessor {
      * @param cache 缓存配置
      * @return  获取缓存结果
      */
-    Object get(String cacheName, Cache cache);
+    Object get(String cacheName, CacheContext cache);
 
     /**
      * 保存数据到缓存中
@@ -37,5 +38,5 @@ public interface CacheProcessor {
      * @param value     保存的数据
      * @param cache     缓存配置
      */
-    void save(String cacheName, Object value, Cache cache);
+    void save(String cacheName, Object value, CacheContext cache);
 }

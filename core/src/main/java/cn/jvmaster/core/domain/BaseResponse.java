@@ -26,11 +26,11 @@ public record BaseResponse<T>(Integer code, String msg, T data) {
         return build(Code.OK, data);
     }
 
-    public static <T> BaseResponse<T> error(Code code, String message) {
+    public static <T> BaseResponse<T> error(Constant<Integer> code, String message) {
         return new BaseResponse<>(code.getCode(), message, null);
     }
 
-    public static <T> BaseResponse<T> build(Code code, T data) {
+    public static <T> BaseResponse<T> build(Constant<Integer> code, T data) {
         return new BaseResponse<>(code.getCode(), code.getMessage(), data);
     }
 }

@@ -1,8 +1,10 @@
 package cn.jvmaster.core.tree;
 
 import cn.jvmaster.core.exception.SystemException;
+import cn.jvmaster.core.serializer.TreeSerializer;
 import cn.jvmaster.core.util.CollectionUtils;
 import cn.jvmaster.core.util.StringUtils;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import java.lang.constant.ConstantDesc;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -18,8 +20,11 @@ import java.util.function.Predicate;
 /**
  * 多叉树，一个根节点有多个叶子节点
  *
- * @param <T>   节点内容类型
- */
+ * @author AI
+ * @date 2025/4/23 16:39
+ * @version 1.0
+**/
+@JsonSerialize(using = TreeSerializer.class)
 public class NaryTree<T> implements Tree<T> {
 
     /**
@@ -40,9 +45,12 @@ public class NaryTree<T> implements Tree<T> {
     /**
      * 节点数据提取器，用于获取节点的排序值
      */
-    private Comparator<? super T> sortComparator;
+    private Comparator<T> sortComparator;
 
-    public NaryTree(NaryTreeNode<T> root, Function<T, ? extends ConstantDesc> keyExtractor, Function<T, ? extends ConstantDesc> parentExtractor, Comparator<? super T> sortComparator) {
+    public NaryTree(NaryTreeNode<T> root,
+                    Function<T, ? extends ConstantDesc> keyExtractor,
+                    Function<T, ? extends ConstantDesc> parentExtractor,
+                    Comparator<T> sortComparator) {
         this.root = root;
         this.keyExtractor = keyExtractor;
         this.parentExtractor = parentExtractor;
@@ -57,27 +65,15 @@ public class NaryTree<T> implements Tree<T> {
         this.root = root;
     }
 
-    public Function<T, ? extends ConstantDesc> getKeyExtractor() {
-        return keyExtractor;
-    }
-
     public void setKeyExtractor(Function<T, ? extends ConstantDesc> keyExtractor) {
         this.keyExtractor = keyExtractor;
-    }
-
-    public Function<T, ? extends ConstantDesc> getParentExtractor() {
-        return parentExtractor;
     }
 
     public void setParentExtractor(Function<T, ? extends ConstantDesc> parentExtractor) {
         this.parentExtractor = parentExtractor;
     }
 
-    public Comparator<? super T> getSortComparator() {
-        return sortComparator;
-    }
-
-    public void setSortComparator(Comparator<? super T> sortComparator) {
+    public void setSortComparator(Comparator<T> sortComparator) {
         this.sortComparator = sortComparator;
     }
 
@@ -96,8 +92,7 @@ public class NaryTree<T> implements Tree<T> {
             return null;
         }
 
-        ConstantDesc parentId = parentExtractor.apply(node);
-        Optional<NaryTreeNode<T>> parentNode = searchNode(item -> parentId.equals(keyExtractor.apply(item)));
+        Optional<NaryTreeNode<T>> parentNode = searchNode(item -> equals(item, node));
         if (parentNode.isEmpty()) {
             // 没有父节点数据
             return null;
@@ -162,16 +157,7 @@ public class NaryTree<T> implements Tree<T> {
         if (data == null) {
             return null;
         }
-//
-//        if (equals(root.getData(), data)) {
-//            // 如果是根节点，则只将子节点数据置空
-//            List<T> children = root.getChildren().stream().map(NaryTreeNode::getData).toList();
-//            root.getChildren().clear();
-//
-//            return children;
-//        }
-//
-//        return delete(root, item -> equals(item, data)).map(tvTreeNode -> tvTreeNode.getChildren().stream().map(NaryTreeNode::getData).toList()).orElse(null);
+        
         return delete(item -> equals(item, data));
     }
 
@@ -181,8 +167,8 @@ public class NaryTree<T> implements Tree<T> {
      * @param predicate 条件
      * @return  删除节点的子节点
      */
-    public List<T> delete(Predicate<T> predicate) {
-        if (predicate.test(root.getData())) {
+    public List<T> delete(Predicate<NaryTreeNode<T>> predicate) {
+        if (predicate.test(root)) {
             // 如果是根节点，则只将子节点数据置空
             List<T> children = root.getChildren().stream().map(NaryTreeNode::getData).toList();
             root.getChildren().clear();
@@ -198,9 +184,9 @@ public class NaryTree<T> implements Tree<T> {
      * @param root  根节点
      * @return  被删除的节点
      */
-    private Optional<NaryTreeNode<T>> delete(NaryTreeNode<T> root, Predicate<T> predicate) {
+    private Optional<NaryTreeNode<T>> delete(NaryTreeNode<T> root, Predicate<NaryTreeNode<T>> predicate) {
         for (final NaryTreeNode<T> currentNode : root.getChildren()) {
-            if (predicate.test(currentNode.getData())) {
+            if (predicate.test(currentNode)) {
                 // 找到目标节点，移除节点
                 root.getChildren().remove(currentNode);
 
@@ -232,7 +218,7 @@ public class NaryTree<T> implements Tree<T> {
         return searchNode(item -> equals(item, node)).orElse(null);
     }
 
-    public TreeNode<T> search(Predicate<T> predicate) {
+    public TreeNode<T> search(Predicate<NaryTreeNode<T>> predicate) {
         return searchNode(predicate).orElse(null);
     }
 
@@ -241,12 +227,12 @@ public class NaryTree<T> implements Tree<T> {
      * @param predicate 匹配函数
      * @return  找到的节点
      */
-    private Optional<NaryTreeNode<T>> searchNode(Predicate<T> predicate) {
-        if (predicate.test(root.getData())) {
+    private Optional<NaryTreeNode<T>> searchNode(Predicate<NaryTreeNode<T>> predicate) {
+        if (predicate.test(root)) {
             return Optional.of(root);
         }
 
-        return CollectionUtils.search(root.getChildren(), item -> predicate.test(item.getData()), NaryTreeNode::getChildren);
+        return CollectionUtils.search(root.getChildren(), predicate, NaryTreeNode::getChildren);
     }
 
     @Override
@@ -256,12 +242,12 @@ public class NaryTree<T> implements Tree<T> {
         }
 
         // 节点标识相等
-        if (equals(root.getData(), node)) {
+        if (equals(root, node)) {
             return true;
         }
 
         // 判断子节点是否存在相等的数据
-        return CollectionUtils.contains(root.getChildren(), item -> equals(item.getData(), node), NaryTreeNode::getChildren);
+        return CollectionUtils.contains(root.getChildren(), item -> equals(item, node), NaryTreeNode::getChildren);
     }
 
     /**
@@ -336,8 +322,19 @@ public class NaryTree<T> implements Tree<T> {
      * @param node2    节点
      * @return  如果一致，则返回true
      */
-    private boolean equals(T node1, T node2) {
-        return keyExtractor.apply(node1).equals(keyExtractor.apply(node2));
+    private boolean equals(NaryTreeNode<T> node1, T node2) {
+        ConstantDesc node2Id = keyExtractor.apply(node2);
+        if (node1.getId() != null) {
+            if (node1.getId().equals(node2Id)) {
+                return true;
+            }
+        }
+
+        if (node1.getData() == null) {
+            return false;
+        }
+
+        return keyExtractor.apply(node1.getData()).equals(keyExtractor.apply(node2));
     }
 
     /**
@@ -362,6 +359,11 @@ public class NaryTree<T> implements Tree<T> {
     public static class NaryTreeNode<T> implements TreeNode<T> {
 
         /**
+         * 对应节点的ID
+         */
+        private ConstantDesc id;
+
+        /**
          * 节点内容
          */
         private T data;
@@ -369,11 +371,22 @@ public class NaryTree<T> implements Tree<T> {
         /**
          * 子节点
          */
-        private List<NaryTreeNode<T>> children;
+        private List<NaryTreeNode<T>> children = new ArrayList<>();
+
+        public NaryTreeNode() {
+        }
 
         public NaryTreeNode(T data, List<NaryTreeNode<T>> children) {
             this.data = data;
             this.children = children;
+        }
+
+        public ConstantDesc getId() {
+            return id;
+        }
+
+        public void setId(ConstantDesc id) {
+            this.id = id;
         }
 
         public T getData() {

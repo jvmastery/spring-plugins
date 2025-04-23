@@ -69,7 +69,7 @@ public abstract class AbstractRedisOperationService<T> {
      * @return  脚本执行结果
      */
     public <S> S executeLuaFromFile(Class<S> tClass, String filepath, int keySize, Object... args) {
-        return executeLuaFromFile(tClass, redisTemplate.getValueSerializer(), filepath, keySize, args);
+        return executeLuaFromFile(tClass, redisTemplate.getStringSerializer(), filepath, keySize, args);
     }
 
     /**

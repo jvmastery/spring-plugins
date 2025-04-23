@@ -39,7 +39,7 @@ public class SpringUtils implements ApplicationContextAware {
      * @return 对应bean实例
      */
     public static Object getBean(String name){
-        return getApplicationContext().getBean(name);
+        return applicationContext.containsBean(name) ? applicationContext.getBean(name) : null;
     }
 
     /**
@@ -61,7 +61,7 @@ public class SpringUtils implements ApplicationContextAware {
      * @return 对应类实例
      * @param <T>   实例类型
      */
-    public static <T> T getBean(String name,Class<T> clazz){
+    public static <T> T getBean(String name, Class<T> clazz){
         return getApplicationContext().getBean(name, clazz);
     }
 }

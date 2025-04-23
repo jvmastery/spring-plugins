@@ -12,9 +12,9 @@ import org.springframework.data.redis.core.RedisTemplate;
  * @date 2024/12/19 15:52
  * @version 1.0
 **/
-public class ListRedisOperationService extends AbstractRedisOperationService<Object> {
+public class ListRedisOperationService<T> extends AbstractRedisOperationService<T> {
 
-    public ListRedisOperationService(RedisTemplate<String, Object> redisTemplate) {
+    public ListRedisOperationService(RedisTemplate<String, T> redisTemplate) {
         super(redisTemplate);
     }
 
@@ -23,7 +23,7 @@ public class ListRedisOperationService extends AbstractRedisOperationService<Obj
      * @param key   缓存key
      * @param value 缓存对象
      */
-    public void set(String key, Collection<?> value) {
+    public void set(String key, Collection<T> value) {
         set(key, value, null);
     }
 
@@ -33,7 +33,7 @@ public class ListRedisOperationService extends AbstractRedisOperationService<Obj
      * @param value 缓存对象
      * @param timeout   有效时间
      */
-    public void set(String key, Collection<?> value, Duration timeout) {
+    public void set(String key, Collection<T> value, Duration timeout) {
         set(key, value, timeout, false);
     }
 
@@ -44,7 +44,7 @@ public class ListRedisOperationService extends AbstractRedisOperationService<Obj
      * @param timeout   有效时间
      * @param remove 是否删除旧数据
      */
-    public void set(String key, Collection<?> value, Duration timeout, boolean remove) {
+    public void set(String key, Collection<T> value, Duration timeout, boolean remove) {
         if (value == null || value.isEmpty()) {
             // 没有数据
             return;
@@ -74,7 +74,7 @@ public class ListRedisOperationService extends AbstractRedisOperationService<Obj
      * @param key   缓存值
      * @return  list数据
      */
-    public List<?> get(String key) {
+    public List<T> get(String key) {
         return redisTemplate.opsForList().range(key, 0, -1);
     }
 }
