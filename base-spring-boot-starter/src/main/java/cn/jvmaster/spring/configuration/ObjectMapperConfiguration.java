@@ -2,6 +2,7 @@ package cn.jvmaster.spring.configuration;
 
 import cn.jvmaster.core.constant.Constant;
 import cn.jvmaster.core.serializer.EnumSerializer;
+import cn.jvmaster.core.serializer.LongToStringSerializer;
 import cn.jvmaster.spring.annotation.JsonIgnoreForHttp;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -32,6 +33,7 @@ public class ObjectMapperConfiguration {
         SimpleModule enumModule = new SimpleModule();
         Class<Constant<?>> enumClass = (Class<Constant<?>>) (Class<?>) Constant.class;
         enumModule.addSerializer(enumClass, new EnumSerializer());
+        enumModule.addSerializer(Long.class, new LongToStringSerializer());
 
         return builder
             .createXmlMapper(false)

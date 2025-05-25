@@ -2,13 +2,11 @@ package cn.jvmaster.security;
 
 import cn.jvmaster.redis.service.RedisOperationService;
 import cn.jvmaster.redis.starter.EnableRedis;
-import cn.jvmaster.redis.starter.RedisProperties;
-import cn.jvmaster.security.authentication.OAuth2PasswordAuthenticationProvider;
+import cn.jvmaster.security.customizer.UserCustomizer;
 import cn.jvmaster.security.encoder.AuthorizationPasswordEncoder;
 import cn.jvmaster.security.handler.AccessTokenSuccessResponseHandler;
 import cn.jvmaster.security.handler.LoginFailureHandler;
 import cn.jvmaster.security.handler.OpaqueTokenIntrospectorHandler;
-import cn.jvmaster.security.handler.RememberMeAuthenticationSuccessHandler;
 import cn.jvmaster.security.handler.RequestAccessDeniedHandler;
 import cn.jvmaster.security.service.RedisOAuth2AuthorizationConsentService;
 import cn.jvmaster.security.service.RedisOAuth2AuthorizationService;
@@ -21,7 +19,6 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationConsent;
@@ -33,7 +30,6 @@ import org.springframework.security.oauth2.server.resource.introspection.OpaqueT
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
-import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.rememberme.PersistentRememberMeToken;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 

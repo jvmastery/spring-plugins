@@ -28,7 +28,7 @@ public class EnumSerializer<T extends Enum<T> & Constant<?>> extends JsonSeriali
 
         // 是否使用自定义序列化方式
         boolean usingHttpEnumSerializer = constant.getClass().isAnnotationPresent(UsingHttpEnumSerializer.class);
-        if (!usingHttpEnumSerializer) {
+        if (usingHttpEnumSerializer && !constant.getClass().getAnnotation(UsingHttpEnumSerializer.class).use()) {
             // 默认方式
             jsonGenerator.writeString(constant.name());
             return;

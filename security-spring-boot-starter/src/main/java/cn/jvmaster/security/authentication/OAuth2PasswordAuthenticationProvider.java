@@ -1,7 +1,7 @@
 package cn.jvmaster.security.authentication;
 
 import cn.jvmaster.security.constant.AuthorizationGrantTypeBuilder;
-import cn.jvmaster.security.util.OAuth2AuthenticationUtils;
+import cn.jvmaster.security.util.AuthorizationUtils;
 import java.security.Principal;
 import java.util.Set;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -44,7 +44,7 @@ public class OAuth2PasswordAuthenticationProvider implements AuthenticationProvi
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         OAuth2PasswordAuthenticationToken passwordAuthentication = (OAuth2PasswordAuthenticationToken) authentication;
-        OAuth2ClientAuthenticationToken clientPrincipal = OAuth2AuthenticationUtils.getAuthenticatedClientElseThrowInvalidClient(passwordAuthentication);
+        OAuth2ClientAuthenticationToken clientPrincipal = AuthorizationUtils.getAuthenticatedClientElseThrowInvalidClient(passwordAuthentication);
         RegisteredClient registeredClient = clientPrincipal.getRegisteredClient();
         if (registeredClient == null) {
             return null;
@@ -83,10 +83,10 @@ public class OAuth2PasswordAuthenticationProvider implements AuthenticationProvi
         OAuth2TokenContext tokenContext = tokenContextBuilder.tokenType(OAuth2TokenType.ACCESS_TOKEN).build();
         OAuth2Token generatedAccessToken = this.tokenGenerator.generate(tokenContext);
         if (generatedAccessToken == null) {
-            OAuth2AuthenticationUtils.throwError("server_error", "The token generator failed to generate the access token.", "https://datatracker.ietf.org/doc/html/rfc6749#section-5.2");
+            AuthorizationUtils.throwError("server_error", "The token generator failed to generate the access token.", "https://datatracker.ietf.org/doc/html/rfc6749#section-5.2");
             return null;
         }
-        OAuth2AccessToken accessToken = OAuth2AuthenticationUtils.accessToken(authorizationBuilder, generatedAccessToken, tokenContext);
+        OAuth2AccessToken accessToken = AuthorizationUtils.accessToken(authorizationBuilder, generatedAccessToken, tokenContext);
 
         // 生成刷新token
         OAuth2RefreshToken currentRefreshToken = null;
@@ -94,7 +94,7 @@ public class OAuth2PasswordAuthenticationProvider implements AuthenticationProvi
 
             OAuth2Token generatedRefreshToken = this.tokenGenerator.generate(tokenContextBuilder.tokenType(OAuth2TokenType.REFRESH_TOKEN).build());
             if (!(generatedRefreshToken instanceof OAuth2RefreshToken)) {
-                OAuth2AuthenticationUtils.throwError("server_error", "The token generator failed to generate the refresh token.", "https://datatracker.ietf.org/doc/html/rfc6749#section-5.2");
+                AuthorizationUtils.throwError("server_error", "The token generator failed to generate the refresh token.", "https://datatracker.ietf.org/doc/html/rfc6749#section-5.2");
                 return null;
             }
 

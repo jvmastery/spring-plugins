@@ -1,4 +1,4 @@
-package cn.jvmaster.security;
+package cn.jvmaster.security.customizer;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.method.HandlerMethod;

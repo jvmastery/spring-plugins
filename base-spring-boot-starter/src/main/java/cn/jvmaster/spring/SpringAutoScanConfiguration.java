@@ -10,7 +10,11 @@ import org.springframework.context.annotation.Configuration;
  * @version 1.0
 **/
 @Configuration
-@ComponentScan(basePackages = "cn.jvmaster.spring")
+@ComponentScan(basePackages = {
+    "cn.jvmaster.spring.configuration",
+    "cn.jvmaster.spring.converter" ,
+    "cn.jvmaster.spring.util"
+})
 public class SpringAutoScanConfiguration {
 
 }

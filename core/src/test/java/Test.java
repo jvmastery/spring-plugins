@@ -4,6 +4,7 @@ import cn.jvmaster.core.tree.Node;
 import cn.jvmaster.core.tree.Tree;
 import cn.jvmaster.core.tree.TreeFactory;
 import cn.jvmaster.core.tree.TreeNode;
+import cn.jvmaster.core.util.DateUtils;
 import cn.jvmaster.core.util.RandomUtils;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -14,7 +15,16 @@ import java.util.Map;
 public class Test {
 
     public static void main(String[] args) {
-        testCustomerNode();
+        System.out.println(DateUtils.convert("2024-1-1 00:00:00"));
+    }
+
+    public static void testBinarySearchTree() {
+        BinarySearchTree<Integer> binarySearchTree = new BinarySearchTree<>();
+        for (int i = 0; i < 100; i++) {
+            binarySearchTree.insert(RandomUtils.random(10000));
+        }
+
+        System.out.println();
     }
 
     private static void testCustomerNode() {

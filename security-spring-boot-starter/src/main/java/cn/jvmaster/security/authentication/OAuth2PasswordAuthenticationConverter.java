@@ -1,7 +1,7 @@
 package cn.jvmaster.security.authentication;
 
 import cn.jvmaster.security.constant.AuthorizationGrantTypeBuilder;
-import cn.jvmaster.security.util.OAuth2AuthenticationUtils;
+import cn.jvmaster.security.util.AuthorizationUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -25,7 +25,7 @@ public class OAuth2PasswordAuthenticationConverter implements AuthenticationConv
 
     @Override
     public Authentication convert(HttpServletRequest request) {
-        MultiValueMap<String, String> parameters = OAuth2AuthenticationUtils.getFormParameters(request);
+        MultiValueMap<String, String> parameters = AuthorizationUtils.getFormParameters(request);
         String grantType = parameters.getFirst("grant_type");
         if (!AuthorizationGrantTypeBuilder.PASSWORD.getValue().equals(grantType)) {
             return null;
@@ -35,18 +35,18 @@ public class OAuth2PasswordAuthenticationConverter implements AuthenticationConv
             // 用户名
             String username = parameters.getFirst("username");
             if (!StringUtils.hasText(username) || parameters.get("username").size() != 1) {
-                OAuth2AuthenticationUtils.throwError("invalid_request", "username", "https://datatracker.ietf.org/doc/html/rfc6749#section-5.2");
+                AuthorizationUtils.throwError("invalid_request", "username", "https://datatracker.ietf.org/doc/html/rfc6749#section-5.2");
             }
 
             // 密码
             String password = parameters.getFirst("password");
             if (!StringUtils.hasText(password) || parameters.get("password").size() != 1) {
-                OAuth2AuthenticationUtils.throwError("invalid_request", "password", "https://datatracker.ietf.org/doc/html/rfc6749#section-5.2");
+                AuthorizationUtils.throwError("invalid_request", "password", "https://datatracker.ietf.org/doc/html/rfc6749#section-5.2");
             }
 
             String scope = parameters.getFirst("scope");
             if (StringUtils.hasText(scope) && parameters.get("scope").size() != 1) {
-                OAuth2AuthenticationUtils.throwError("invalid_request", "OAuth 2.0 Parameter: scope", "https://datatracker.ietf.org/doc/html/rfc6749#section-5.2");
+                AuthorizationUtils.throwError("invalid_request", "OAuth 2.0 Parameter: scope", "https://datatracker.ietf.org/doc/html/rfc6749#section-5.2");
             }
 
             Set<String> requestedScopes = null;

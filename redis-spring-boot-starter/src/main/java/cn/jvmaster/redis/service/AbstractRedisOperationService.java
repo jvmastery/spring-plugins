@@ -4,11 +4,17 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.dao.DataAccessException;
+import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.connection.ReturnType;
 import org.springframework.data.redis.core.RedisCallback;
+import org.springframework.data.redis.core.RedisOperations;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.SessionCallback;
 import org.springframework.data.redis.serializer.RedisSerializer;
+import org.springframework.lang.NonNull;
 import org.springframework.scripting.support.ResourceScriptSource;
 
 /**
@@ -175,6 +181,20 @@ public abstract class AbstractRedisOperationService<T> {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * 执行批量脚本
+     */
+    @SuppressWarnings("rawtypes")
+    public List<Object> executePipelined(Consumer<RedisOperations> consumer) {
+        return redisTemplate.executePipelined(new SessionCallback<Object>() {
+            @Override
+            public <K, V> Object execute(@NonNull RedisOperations<K, V> operations) throws DataAccessException {
+                consumer.accept(operations);
+                return null;
+            }
+        });
     }
 
     public RedisTemplate<String, T> getRedisTemplate() {

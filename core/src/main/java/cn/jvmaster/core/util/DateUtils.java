@@ -51,12 +51,39 @@ public class DateUtils {
     }
 
     /**
-     * 将字符串日期转换为日期格式，字符串格式：yyyy-MM-dd HH:mm:ss
+     * 判断字符串是否是时间格式
+     * @param time  字符串
+     * @return 是否是日期字符串
+     */
+    public static boolean isTimeString(String time) {
+        if (StringUtils.isEmpty(time)) {
+            return false;
+        }
+
+        for (DateTimeFormat format : DateTimeFormat.values()) {
+            if (RegexUtils.matches(time, format.getRegex())) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * 将字符串日期转换为日期格式
      * @param time  待转换时间字符串
      * @return DateTime对象
      */
     public static DateTime convert(String time) {
-        return convert(time, DateTimeFormat.NORMAL_DATETIME);
+        for (DateTimeFormat format : DateTimeFormat.values()) {
+            if (!RegexUtils.matches(time, format.getRegex())) {
+                continue;
+            }
+
+            return convert(time, format.getPattern());
+        }
+
+        throw new SystemException("时间格式错误：" + time);
     }
 
     /**
@@ -83,7 +110,7 @@ public class DateUtils {
      * @return  字符串时间
      */
     public static String covert(Date date) {
-        return covert(date, DateTimeFormat.NORMAL_DATETIME);
+        return covert(date, DateTimeFormat.NORMAL_DATETIME.getPattern());
     }
 
     /**

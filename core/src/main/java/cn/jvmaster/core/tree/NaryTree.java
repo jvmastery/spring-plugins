@@ -2,6 +2,7 @@ package cn.jvmaster.core.tree;
 
 import cn.jvmaster.core.exception.SystemException;
 import cn.jvmaster.core.serializer.TreeSerializer;
+import cn.jvmaster.core.tree.NaryTree.NaryTreeNode;
 import cn.jvmaster.core.util.CollectionUtils;
 import cn.jvmaster.core.util.StringUtils;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -25,7 +26,7 @@ import java.util.function.Predicate;
  * @version 1.0
 **/
 @JsonSerialize(using = TreeSerializer.class)
-public class NaryTree<T> implements Tree<T> {
+public class NaryTree<T> implements Tree<T, NaryTreeNode<T>> {
 
     /**
      * 根节点
@@ -78,7 +79,7 @@ public class NaryTree<T> implements Tree<T> {
     }
 
     @Override
-    public <V extends T> TreeNode<T> insert(V node) {
+    public <V extends T> NaryTreeNode<T> insert(V node) {
         return insertTreeNode(node);
     }
 
@@ -92,13 +93,21 @@ public class NaryTree<T> implements Tree<T> {
             return null;
         }
 
-        Optional<NaryTreeNode<T>> parentNode = searchNode(item -> equals(item, node));
+        ConstantDesc parentId = parentExtractor.apply(node);
+        Optional<NaryTreeNode<T>> parentNode = parentId == null ? Optional.empty() : search(item -> {
+            if (parentId.equals(item.getId())) {
+                return true;
+            }
+
+            return item.getData() != null && parentId.equals(keyExtractor.apply(item.getData()));
+        });
         if (parentNode.isEmpty()) {
             // 没有父节点数据
             return null;
         } else {
             // 找到了父节点，将当前节点插入到父节点子元素中
-            NaryTreeNode<T> treeNode = NaryTreeNode.build(node);
+            NaryTreeNode<T> treeNode = NaryTreeNode.build(node, keyExtractor);
+
             parentNode.get().getChildren().add(treeNode);
             sort(parentNode.get());
 
@@ -107,7 +116,12 @@ public class NaryTree<T> implements Tree<T> {
     }
 
     @Override
-    public <V extends T> Tree<T> insertAll(Collection<V> nodes) {
+    public <V extends T> Tree<T, NaryTreeNode<T>> insertAll(Collection<V> nodes) {
+        return insertAll(nodes, null);
+    }
+
+    @Override
+    public <V extends T> Tree<T, NaryTreeNode<T>> insertAll(Collection<V> nodes, Predicate<V> predicate) {
         if (CollectionUtils.isEmpty(nodes)) {
             return this;
         }
@@ -115,21 +129,15 @@ public class NaryTree<T> implements Tree<T> {
         // 游离节点集合，针对暂时还没有插入到集合中的节点进行存储，其中key是节点的父ID
         Map<ConstantDesc, List<T>> freeNodeMap = new HashMap<>();
 
-        for (T node : nodes) {
-            if (node == null) {
+        for (V node : nodes) {
+            if (node == null || (predicate != null && !predicate.test(node))) {
                 continue;
             }
 
             NaryTreeNode<T> currentNode = insertTreeNode(node);
             if (currentNode != null) {
-                // 判断是否存在相应的游离节点，如果存在，则添加到子节点中
-                ConstantDesc id = keyExtractor.apply(node);
-                if (freeNodeMap.containsKey(id)) {
-                    currentNode.getChildren().addAll(currentNode.getChildren());
-                    sort(currentNode);
-                    freeNodeMap.remove(id);
-                }
-
+                // 判断是否存在相应的游离节点，如果存在，则添加到子节点中。且添加的节点也需要遍历判断
+                addFreeNode(currentNode, freeNodeMap);
                 continue;
             }
 
@@ -144,12 +152,32 @@ public class NaryTree<T> implements Tree<T> {
         // 将剩余的游离节点添加到根节点下
         if (!freeNodeMap.isEmpty()) {
             freeNodeMap.forEach((key, value) -> {
-                root.getChildren().addAll(value.stream().map(NaryTreeNode::build).toList());
+                root.getChildren().addAll(value.stream().map(item -> NaryTreeNode.build(item, keyExtractor)).toList());
             });
             sort(root);
         }
 
         return this;
+    }
+
+    /**
+     * 添加游离节点
+     * @param currentNode  当前节点
+     * @param freeNodeMap  游离节点集合
+     */
+    private void addFreeNode(NaryTreeNode<T> currentNode, Map<ConstantDesc, List<T>> freeNodeMap) {
+        ConstantDesc id = keyExtractor.apply(currentNode.getData());
+        if (!freeNodeMap.containsKey(id)) {
+            return;
+        }
+
+        // 存在该节点的游离节点
+        List<NaryTreeNode<T>> nodeList = freeNodeMap.get(id).stream().map(item -> NaryTreeNode.build(item, keyExtractor)).toList();
+        currentNode.getChildren().addAll(nodeList);
+        sort(currentNode);
+        freeNodeMap.remove(id);
+
+        nodeList.forEach(node -> addFreeNode(node, freeNodeMap));
     }
 
     @Override
@@ -210,16 +238,12 @@ public class NaryTree<T> implements Tree<T> {
     }
 
     @Override
-    public TreeNode<T> search(T node) {
+    public Optional<NaryTreeNode<T>> search(T node) {
         if (node == null) {
-            return null;
+            return Optional.empty();
         }
 
-        return searchNode(item -> equals(item, node)).orElse(null);
-    }
-
-    public TreeNode<T> search(Predicate<NaryTreeNode<T>> predicate) {
-        return searchNode(predicate).orElse(null);
+        return search(item -> equals(item, node));
     }
 
     /**
@@ -227,7 +251,8 @@ public class NaryTree<T> implements Tree<T> {
      * @param predicate 匹配函数
      * @return  找到的节点
      */
-    private Optional<NaryTreeNode<T>> searchNode(Predicate<NaryTreeNode<T>> predicate) {
+    @Override
+    public Optional<NaryTreeNode<T>> search(Predicate<NaryTreeNode<T>> predicate) {
         if (predicate.test(root)) {
             return Optional.of(root);
         }
@@ -260,7 +285,7 @@ public class NaryTree<T> implements Tree<T> {
     }
 
     @Override
-    public List<T> traverse(Consumer<TreeNode<T>> consumer) {
+    public List<T> traverse(Consumer<NaryTreeNode<T>> consumer) {
         return traversal(root, consumer, true);
     }
 
@@ -269,7 +294,7 @@ public class NaryTree<T> implements Tree<T> {
      * @param root  根节点
      * @return  子节点
      */
-    private List<T> traversal(NaryTreeNode<T> root, Consumer<TreeNode<T>> consumer, boolean isPreOrder) {
+    private List<T> traversal(NaryTreeNode<T> root, Consumer<NaryTreeNode<T>> consumer, boolean isPreOrder) {
         List<T> list = new ArrayList<>();
         if (root == null) {
             return list;
@@ -297,7 +322,7 @@ public class NaryTree<T> implements Tree<T> {
     }
 
     @Override
-    public List<T> inOrderTraverse(Consumer<TreeNode<T>> consumer) {
+    public List<T> inOrderTraverse(Consumer<NaryTreeNode<T>> consumer) {
         throw new SystemException("多叉树不支持中序遍历");
     }
 
@@ -311,7 +336,7 @@ public class NaryTree<T> implements Tree<T> {
     }
 
     @Override
-    public List<T> postOrderTraverse(Consumer<TreeNode<T>> consumer) {
+    public List<T> postOrderTraverse(Consumer<NaryTreeNode<T>> consumer) {
         return traversal(root, consumer, false);
     }
 
@@ -376,7 +401,8 @@ public class NaryTree<T> implements Tree<T> {
         public NaryTreeNode() {
         }
 
-        public NaryTreeNode(T data, List<NaryTreeNode<T>> children) {
+        public NaryTreeNode(ConstantDesc id, T data, List<NaryTreeNode<T>> children) {
+            this.id = id;
             this.data = data;
             this.children = children;
         }
@@ -411,8 +437,8 @@ public class NaryTree<T> implements Tree<T> {
          * @return      节点对象
          * @param <T>   数据类型
          */
-        public static <T> NaryTreeNode<T> build(T data) {
-            return new NaryTreeNode<>(data, new ArrayList<>());
+        public static <T> NaryTreeNode<T> build(T data, Function<T, ? extends ConstantDesc> keyExtractor) {
+            return new NaryTreeNode<>(keyExtractor.apply(data), data, new ArrayList<>());
         }
     }
 }

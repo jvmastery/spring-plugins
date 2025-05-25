@@ -6,70 +6,110 @@ package cn.jvmaster.core.constant;
  * @date 2024/12/12 9:16
  * @version 1.0
 **/
-public interface DateTimeFormat {
+public enum DateTimeFormat {
+    /**
+     * yyyy-MM-dd HH:mm:ss 格式
+     */
+    NORMAL_DATETIME(
+        "^\\d{4}-\\d{1,2}-\\d{1,2} \\d{1,2}:\\d{1,2}:\\d{1,2}$",
+        "yyyy-MM-dd HH:mm:ss",
+        "年-月-日 时:分:秒（如 2024-05-21 15:30:00）"
+    ),
 
     /**
-     * 年
+     * yyyy/MM/dd HH:mm:ss 格式
      */
-    String NORMAL_YEAR = "yyyy";
+    NORMAL_DATETIME_SLASH(
+        "^\\d{4}/\\d{1,2}/\\d{1,2} \\d{1,2}:\\d{1,2}:\\d{1,2}$",
+        "yyyy/MM/dd HH:mm:ss",
+        "年/月/日 时:分:秒（如 2024/05/21 15:30:00）"
+    ),
 
     /**
-     * 年-月
+     * yyyy-MM-dd 格式
      */
-    String NORMAL_YEAR_MONTH = "yyyy-MM";
+    NORMAL_DATE(
+        "^\\d{4}-\\d{1,2}-\\d{1,2}$",
+        "yyyy-MM-dd",
+        "年-月-日（如 2024-05-21）"
+    ),
 
     /**
-     * 年-月-日
+     * yyyy/MM/dd 格式
      */
-    String NORMAL_DATE = "yyyy-MM-dd";
+    NORMAL_DATE_SLASH(
+        "^\\d{4}/\\d{1,2}/\\d{1,2}$",
+        "yyyy/MM/dd",
+        "年/月/日（如 2024/05/21）"
+    ),
 
     /**
-     * 标准时间格式：HH:mm:ss
+     * xx年xx月xx日HH时mm分ss秒 格式
      */
-    String NORMAL_TIME = "HH:mm:ss";
+    CHINESE_DATETIME(
+        "^\\d{4}年\\d{1,2}月\\d{1,2}日\\d{1,2}时\\d{1,2}分\\d{1,2}秒$",
+        "yyyy年MM月dd日HH时mm分ss秒",
+        "中文日期（如2024年05月21日15时30分00秒）"
+    ),
 
     /**
-     * 年-月-日 时
+     * xx年xx月xx日 格式
      */
-    String NORMAL_DATETIME_HOUR = "yyyy-MM-dd HH";
+    CHINESE_DATE(
+        "^\\d{4}年\\d{1,2}月\\d{1,2}日$",
+        "yyyy年MM月dd日",
+        "中文日期（如2024年05月21日）"
+    ),
 
     /**
-     * 年-月-日 时:分
+     * yyyyMMddHHmmss 紧凑格式
      */
-    String NORMAL_DATETIME_MINUTE = "yyyy-MM-dd HH:mm";
+    SIMPLE_DATETIME(
+        "^\\d{14}$",
+        "yyyyMMddHHmmss",
+        "年月日时分秒（如 20240521153000）"
+    ),
 
     /**
-     * 年-月-日 时:分:秒
+     * yyyyMMdd 紧凑日期格式
      */
-    String NORMAL_DATETIME = "yyyy-MM-dd HH:mm:ss";
+    SIMPLE_DATE(
+        "^\\d{8}$",
+        "yyyyMMdd",
+        "年月日（如 20240521）"
+    );
+    ;
 
     /**
-     * 年-月-日 时:分:秒.毫秒
+     * 日期字符串判断正则
      */
-    String NORMAL_DATETIME_MILLIS = "yyyy-MM-dd HH:mm:ss.SSS";
+    private final String regex;
 
     /**
-     * 中文日期
+     * 日期转换格式
      */
-    String CHINESE_DATE = "yyyy年MM月dd日";
+    private final String pattern;
 
     /**
-     * 中文时间
+     * 日期描述
      */
-    String CHINESE_DATETIME = "yyyy年MM月dd日HH时mm分ss秒";
+    private final String description;
 
-    /**
-     * 简单日期
-     */
-    String SIMPLE_DATE = "yyyyMMdd";
+    DateTimeFormat(String regex, String pattern, String description) {
+        this.regex = regex;
+        this.pattern = pattern;
+        this.description = description;
+    }
 
-    /**
-     * 简单时间
-     */
-    String SIMPLE_DATETIME = "yyyyMMddHHmmss";
+    public String getRegex() {
+        return regex;
+    }
 
-    /**
-     * 简单毫秒数
-     */
-    String SIMPLE_DATETIME_MILLIS = "yyyyMMddHHmmssSSS";
+    public String getPattern() {
+        return pattern;
+    }
+
+    public String getDescription() {
+        return description;
+    }
 }

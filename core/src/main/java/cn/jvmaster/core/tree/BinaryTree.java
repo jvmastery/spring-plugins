@@ -18,61 +18,61 @@ import java.util.function.Predicate;
  * @date 2024/12/26 8:58
  * @version 1.0
 **/
-record BinaryTree<T>() implements Tree<T> {
-
-    @Override
-    public <V extends T> TreeNode<T> insert(V node) {
-        return null;
-    }
-
-    @Override
-    public <V extends T> Tree<T> insertAll(Collection<V> nodes) {
-        return null;
-    }
-
-    @Override
-    public List<T> delete(T id) {
-        return List.of();
-    }
-
-    @Override
-    public TreeNode<T> search(T id) {
-        return null;
-    }
-
-    @Override
-    public boolean contains(T id) {
-        return false;
-    }
-
-    @Override
-    public List<T> traverse() {
-        return List.of();
-    }
-
-    @Override
-    public List<T> traverse(Consumer<TreeNode<T>> consumer) {
-        return List.of();
-    }
-
-    @Override
-    public List<T> inOrderTraverse() {
-        return List.of();
-    }
-
-    @Override
-    public List<T> inOrderTraverse(Consumer<TreeNode<T>> consumer) {
-        return List.of();
-    }
-
-    @Override
-    public List<T> postOrderTraverse() {
-        return List.of();
-    }
-
-    @Override
-    public List<T> postOrderTraverse(Consumer<TreeNode<T>> consumer) {
-        return List.of();
-    }
-
-}
+//record BinaryTree<T>() implements Tree<T> {
+//
+//    @Override
+//    public <V extends T> TreeNode<T> insert(V node) {
+//        return null;
+//    }
+//
+//    @Override
+//    public <V extends T> Tree<T> insertAll(Collection<V> nodes) {
+//        return null;
+//    }
+//
+//    @Override
+//    public List<T> delete(T id) {
+//        return List.of();
+//    }
+//
+//    @Override
+//    public TreeNode<T> search(T id) {
+//        return null;
+//    }
+//
+//    @Override
+//    public boolean contains(T id) {
+//        return false;
+//    }
+//
+//    @Override
+//    public List<T> traverse() {
+//        return List.of();
+//    }
+//
+//    @Override
+//    public List<T> traverse(Consumer<TreeNode<T>> consumer) {
+//        return List.of();
+//    }
+//
+//    @Override
+//    public List<T> inOrderTraverse() {
+//        return List.of();
+//    }
+//
+//    @Override
+//    public List<T> inOrderTraverse(Consumer<TreeNode<T>> consumer) {
+//        return List.of();
+//    }
+//
+//    @Override
+//    public List<T> postOrderTraverse() {
+//        return List.of();
+//    }
+//
+//    @Override
+//    public List<T> postOrderTraverse(Consumer<TreeNode<T>> consumer) {
+//        return List.of();
+//    }
+//
+//}

@@ -36,7 +36,6 @@ public class CollectionUtils {
         return list == null ? Collections.emptyList() : list;
     }
 
-
     /**
      * 如果Set为null。则返回一个不可变的默认空集合，否则返回原集合
      * @param set  Set
@@ -223,5 +222,17 @@ public class CollectionUtils {
         }
 
         return builder.toString();
+    }
+
+    /**
+     * 处理集合，如果集合为空，则不处理
+     * @param collection  集合
+     */
+    public static <T> void optionsIfExist(final Collection<T> collection, Consumer<Collection<T>> consumer) {
+        if (isEmpty(collection)) {
+            return;
+        }
+
+        consumer.accept(collection);
     }
 }

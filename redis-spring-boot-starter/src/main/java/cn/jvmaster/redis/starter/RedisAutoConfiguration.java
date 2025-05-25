@@ -19,10 +19,8 @@ import cn.jvmaster.redis.service.StringRedisOperationService;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -61,7 +59,7 @@ public class RedisAutoConfiguration {
     public ObjectMapper objectMapper() {
         ObjectMapper objectMapper = new ObjectMapper();
 
-        objectMapper.setDateFormat(new SimpleDateFormat(DateTimeFormat.NORMAL_DATETIME));
+        objectMapper.setDateFormat(new SimpleDateFormat(DateTimeFormat.NORMAL_DATETIME.getPattern()));
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
         objectMapper.disable(DeserializationFeature.FAIL_ON_INVALID_SUBTYPE);
@@ -168,7 +166,7 @@ public class RedisAutoConfiguration {
      */
     @Bean
     @ConditionalOnMissingBean
-    public <T> RedisOperationService<?> redisOperationService(RedisTemplate<String, Object> redisTemplate,
+    public <T> RedisOperationService<?> redisOperationService(@Qualifier("redisTemplate") RedisTemplate<String, T> redisTemplate,
                                                         StringRedisOperationService<T> stringRedisOperationService,
                                                         SetRedisOperationService<T> setRedisOperationService,
                                                         ListRedisOperationService<T> listRedisOperationService,
@@ -215,12 +213,12 @@ public class RedisAutoConfiguration {
      */
     private List<CacheProcessorEntity> createDefaultProcessor(RedisOperationService<?> redisOperationService) {
         List<CacheProcessorEntity> cacheProcessorList = new ArrayList<>();
-        cacheProcessorList.add(CacheProcessorManager.build(null, new DefaultListCacheProcessor(redisOperationService.listRedisOperationService())));
-        cacheProcessorList.add(CacheProcessorManager.build(null, new DefaultSetCacheProcessor(redisOperationService.setRedisOperationService())));
-        cacheProcessorList.add(CacheProcessorManager.build(null, new DefaultHashCacheProcessor(redisOperationService.hashRedisOperationService())));
+        cacheProcessorList.add(CacheProcessorManager.build(null, new DefaultListCacheProcessor(redisOperationService.getListRedisOperationService())));
+        cacheProcessorList.add(CacheProcessorManager.build(null, new DefaultSetCacheProcessor(redisOperationService.getSetRedisOperationService())));
+        cacheProcessorList.add(CacheProcessorManager.build(null, new DefaultHashCacheProcessor(redisOperationService.getHashRedisOperationService())));
 
         // 默认处理器放在最后一个
-        cacheProcessorList.add(CacheProcessorManager.build(null, new DefaultCacheProcessor(redisOperationService.stringRedisOperationService())));
+        cacheProcessorList.add(CacheProcessorManager.build(null, new DefaultCacheProcessor(redisOperationService.getStringRedisOperationService())));
 
         return cacheProcessorList;
     }

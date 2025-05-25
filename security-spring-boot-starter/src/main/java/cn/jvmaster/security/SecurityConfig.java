@@ -2,15 +2,20 @@ package cn.jvmaster.security;
 
 import cn.jvmaster.security.authentication.OAuth2PasswordAuthenticationConverter;
 import cn.jvmaster.security.authentication.OAuth2PasswordAuthenticationProvider;
-import cn.jvmaster.security.filter.AnonymousAccessFilter;
+import cn.jvmaster.security.customizer.OpenIpCustomizer;
+import cn.jvmaster.security.customizer.SecurityCustomizer;
+import cn.jvmaster.security.filter.RequestValidatorFilter;
+import cn.jvmaster.security.filter.AuthorityValidationFilter;
 import cn.jvmaster.security.filter.CaptchaValidationFilter;
 import cn.jvmaster.security.handler.RememberMeAuthenticationSuccessHandler;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.MediaType;
+import org.springframework.security.authorization.AuthorizationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -30,7 +35,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
-import org.springframework.web.servlet.HandlerMapping;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 /**
@@ -137,7 +141,8 @@ public class SecurityConfig {
     public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http,
                                                           PersistentTokenRepository persistentTokenRepository,
                                                           AccessDeniedHandler accessDeniedHandler,
-                                                          OpaqueTokenIntrospector opaqueTokenIntrospector)
+                                                          OpaqueTokenIntrospector opaqueTokenIntrospector,
+        Optional<AuthorizationManager<HttpServletRequest>> authorizationManager)
             throws Exception {
         http
                 .authorizeHttpRequests((authorize) -> authorize
@@ -172,7 +177,9 @@ public class SecurityConfig {
                 http.addFilterBefore(new CaptchaValidationFilter("/login"), UsernamePasswordAuthenticationFilter.class);
             }
         }
-        http.addFilterBefore(new AnonymousAccessFilter(handlerMapping, openIpCustomizerList), AuthorizationFilter.class);
+        http.addFilterBefore(new RequestValidatorFilter(handlerMapping, openIpCustomizerList), AuthorizationFilter.class);
+        authorizationManager.ifPresent(httpServletRequestAuthorizationManager ->
+            http.addFilterAfter(new AuthorityValidationFilter(httpServletRequestAuthorizationManager), AuthorizationFilter.class));
 
         // 对外暴露，提供修改的可能
         customizerList.ifPresent(securityCustomizers ->

@@ -93,7 +93,7 @@ public class CacheProcessorManager {
         Object[] args = joinPoint.getArgs();
 
         // 获取解析器
-        CacheProcessor cacheProcessor = getCacheResolver(cacheRemove.resolver(), target, signature, args);
+        CacheProcessor cacheProcessor = getCacheResolver(cacheRemove == null ? null : cacheRemove.resolver(), target, signature, args);
         if (cacheProcessor == null) {
             return;
         }

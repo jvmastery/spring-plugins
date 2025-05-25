@@ -8,7 +8,26 @@ import cn.jvmaster.core.constant.Constant;
  * @author AI
  * @date 2024/2/16 14:05
  */
-public record BaseResponse<T>(Integer code, String msg, T data) {
+public class BaseResponse<T> {
+
+    /**
+     * 返回码
+     */
+    private final Integer code;
+    /**
+     * 消息
+     */
+    private final String msg;
+    /**
+     * 内容
+     */
+    private final T data;
+
+    public BaseResponse(Integer code, String msg, T data) {
+        this.code = code;
+        this.msg = msg;
+        this.data = data;
+    }
 
     public BaseResponse(Constant<Integer> data) {
         this(data.getCode(), data.getMessage());
@@ -32,5 +51,17 @@ public record BaseResponse<T>(Integer code, String msg, T data) {
 
     public static <T> BaseResponse<T> build(Constant<Integer> code, T data) {
         return new BaseResponse<>(code.getCode(), code.getMessage(), data);
+    }
+
+    public Integer getCode() {
+        return code;
+    }
+
+    public String getMsg() {
+        return msg;
+    }
+
+    public T getData() {
+        return data;
     }
 }

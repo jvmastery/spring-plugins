@@ -65,7 +65,7 @@ public class TreeFactory {
         AssertUtils.notNull(parentExtractor, "父节点标识函数不能为空");
         AssertUtils.notNull(sortComparator, "排序比较器不能为空");
 
-        return new NaryTree<>(NaryTreeNode.build(root), keyExtractor, parentExtractor, sortComparator);
+        return new NaryTree<>(NaryTreeNode.build(root, keyExtractor), keyExtractor, parentExtractor, sortComparator);
     }
 
     /**

@@ -64,7 +64,18 @@ public class ReflectUtils {
             return null;
         }
 
-        return Arrays.stream(clazz.getDeclaredFields()).filter(predicate).findFirst().orElse(null);
+        Field field = Arrays.stream(clazz.getDeclaredFields()).filter(predicate).findFirst().orElse(null);
+        if (field != null) {
+            return field;
+        }
+
+        // 从父类中找
+        Class<?> superClass = clazz.getSuperclass();
+        if (superClass != null &&  superClass != Object.class) {
+            return getField(superClass, predicate);
+        }
+
+        return null;
     }
 
     /**

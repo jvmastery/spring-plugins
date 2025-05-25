@@ -1,6 +1,6 @@
 package cn.jvmaster.core.util;
 
-import cn.jvmaster.core.exception.SystemException;
+import cn.jvmaster.core.exception.AssertException;
 
 /**
  * 断言工具类
@@ -25,7 +25,7 @@ public class AssertUtils {
      */
     public static void notNull(Object object, String message) {
         if (object == null) {
-            throw new SystemException(message);
+            throw new AssertException(message);
         }
     }
 
@@ -37,7 +37,18 @@ public class AssertUtils {
     public static void notEmpty(Object obj, String message) {
         notNull(obj, message);
         if (obj instanceof String s && s.isEmpty()) {
-            throw new SystemException(message);
+            throw new AssertException(message);
+        }
+    }
+
+    /**
+     * 断言结果为true
+     * @param result    结果
+     * @param message   提示信息
+     */
+    public static void isTrue(boolean result, String message) {
+        if (!result) {
+            throw new AssertException(message);
         }
     }
 

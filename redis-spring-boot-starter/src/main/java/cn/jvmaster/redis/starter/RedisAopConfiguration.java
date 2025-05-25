@@ -8,6 +8,7 @@ import cn.jvmaster.redis.annotation.Lock;
 import cn.jvmaster.redis.generator.CacheKeyGenerator;
 import cn.jvmaster.redis.generator.CacheProcessorManager;
 import cn.jvmaster.redis.service.RedisOperationService;
+import cn.jvmaster.redis.util.CacheUtils;
 import cn.jvmaster.spring.util.ExpressionUtils;
 import java.time.Duration;
 import java.util.Arrays;
@@ -32,7 +33,7 @@ import org.springframework.context.annotation.Configuration;
 @Aspect
 public class RedisAopConfiguration {
 
-    private static final Logger log = LoggerFactory.getLogger(RedisAopConfiguration.class);
+
     private final RedisOperationService<?> redisOperationService;
 
     private final CacheKeyGenerator cacheKeyGenerator;
@@ -53,7 +54,7 @@ public class RedisAopConfiguration {
      */
     @Around("@annotation(lock)")
     public Object handleLock(ProceedingJoinPoint joinPoint, Lock lock) {
-        return redisOperationService.lock(getCacheName(lock.name(), joinPoint), () -> {
+        return redisOperationService.lock(CacheUtils.getCacheName(lock.name(), joinPoint, cacheKeyGenerator), () -> {
             try {
                 return joinPoint.proceed();
             } catch (Throwable e) {
@@ -70,7 +71,7 @@ public class RedisAopConfiguration {
      */
     @Around("@annotation(cache)")
     public Object handleCache(ProceedingJoinPoint joinPoint, Cache cache) {
-        return cacheProcessorManager.resolve(getCacheName(cache.name(), joinPoint), cache, joinPoint, () -> {
+        return cacheProcessorManager.resolve(CacheUtils.getCacheName(cache.name(), joinPoint, cacheKeyGenerator), cache, joinPoint, () -> {
             try {
                 return joinPoint.proceed();
             } catch (Throwable e) {
@@ -92,7 +93,7 @@ public class RedisAopConfiguration {
 
         // 依次执行缓存
         for (Cache item : cache.value()) {
-            Object result = cacheProcessorManager.resolve(getCacheName(item.name(), joinPoint), item, joinPoint, () -> {
+            Object result = cacheProcessorManager.resolve(CacheUtils.getCacheName(item.name(), joinPoint, cacheKeyGenerator), item, joinPoint, () -> {
                 try {
                     // 保证实际方法只执行一次
                     if (methodExecuteResult.get() == null) {
@@ -129,7 +130,7 @@ public class RedisAopConfiguration {
             removeAll = true;
             cacheNames = Collections.singletonList(joinPoint.getTarget().getClass().getName());
         } else {
-            cacheNames = Arrays.stream(cache.name()).map(item -> getCacheName(item, joinPoint)).toList();
+            cacheNames = Arrays.stream(cache.name()).map(item -> CacheUtils.getCacheName(item, joinPoint, cacheKeyGenerator)).toList();
         }
         Object result = joinPoint.proceed();
         cacheProcessorManager.remove(cacheNames, cache, joinPoint, removeAll);
@@ -137,39 +138,5 @@ public class RedisAopConfiguration {
         return result;
     }
 
-    /**
-     * 获取缓存名称
-     * @param name      缓存注解定义的名称
-     * @param joinPoint 切面信息
-     * @return          缓存key
-     */
-    private String getCacheName(String name, ProceedingJoinPoint joinPoint) {
-        Object target = joinPoint.getTarget();
-        MethodSignature signature = ((MethodSignature) joinPoint.getSignature());
-        Object[] args = joinPoint.getArgs();
 
-        if (StringUtils.isEmpty(name)) {
-            // 根据默认配置生成缓存key
-            return cacheKeyGenerator.generate(target, signature, args);
-        }
-
-        // 计算表达式
-        if (!name.contains("#")) {
-            return name;
-        }
-
-        // 这里约定缓存key中不能添加#号，如果添加了#号，则表示为springel表达式
-        String cacheName = ExpressionUtils.calculate(name, String.class, context -> {
-            context.setVariable("target", target.getClass());
-            context.setVariable("method", signature.getMethod());
-            context.setVariable("params", args);
-
-            // 根据字段名称来
-            for (int i = 0; i < signature.getParameterNames().length; i++) {
-                context.setVariable(signature.getParameterNames()[i], args[i]);
-            }
-        });
-        log.debug("表达式{}解析结果: {}", name, cacheName);
-        return cacheName;
-    }
 }

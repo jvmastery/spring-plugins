@@ -1,6 +1,7 @@
 package cn.jvmaster.core.util;
 
 import cn.jvmaster.core.constant.DateTimeFormat;
+import cn.jvmaster.core.constant.RegexConstant;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JavaType;
@@ -26,7 +27,7 @@ public class StringUtils {
 
 
     static {
-        OBJECT_MAPPER.setDateFormat(new SimpleDateFormat(DateTimeFormat.NORMAL_DATETIME));
+        OBJECT_MAPPER.setDateFormat(new SimpleDateFormat(DateTimeFormat.NORMAL_DATETIME.getPattern()));
         OBJECT_MAPPER.setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
         // 反序列化配置
@@ -71,6 +72,15 @@ public class StringUtils {
      */
     public static boolean isNotEmpty(CharSequence str) {
         return !isEmpty(str);
+    }
+
+    /**
+     * 判断字符串是否为数字
+     * @param str   字符串
+     * @return  是否为数字
+     */
+    public static boolean isNumber(String str) {
+        return isNotEmpty(str) && RegexUtils.matches(str, RegexConstant.INTEGER);
     }
 
     /**

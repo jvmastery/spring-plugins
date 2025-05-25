@@ -19,11 +19,24 @@ import org.springframework.data.redis.core.RedisTemplate;
  * @version 1.0
  * @date 2024/12/11 17:20
  **/
-public record RedisOperationService<T>(RedisTemplate<String, Object> redisTemplate,
-                                       StringRedisOperationService<T> stringRedisOperationService,
-                                       SetRedisOperationService<T> setRedisOperationService,
-                                       ListRedisOperationService<T> listRedisOperationService,
-                                       HashRedisOperationService<T> hashRedisOperationService) {
+public class RedisOperationService<T> extends AbstractRedisOperationService<T> {
+
+    private final StringRedisOperationService<T> stringRedisOperationService;
+    private final SetRedisOperationService<T> setRedisOperationService;
+    private final ListRedisOperationService<T> listRedisOperationService;
+    private final HashRedisOperationService<T> hashRedisOperationService;
+
+    public RedisOperationService(RedisTemplate<String, T> redisTemplate,
+                                            StringRedisOperationService<T> stringRedisOperationService,
+                                            SetRedisOperationService<T> setRedisOperationService,
+                                            ListRedisOperationService<T> listRedisOperationService,
+                                            HashRedisOperationService<T> hashRedisOperationService) {
+        super(redisTemplate);
+        this.stringRedisOperationService = stringRedisOperationService;
+        this.setRedisOperationService = setRedisOperationService;
+        this.listRedisOperationService = listRedisOperationService;
+        this.hashRedisOperationService = hashRedisOperationService;
+    }
 
     /**
      * 签到前缀标识
@@ -192,5 +205,21 @@ public record RedisOperationService<T>(RedisTemplate<String, Object> redisTempla
         // 处理加载逻辑
         callback.execute();
         return hashRedisOperationService.get(key, predicate);
+    }
+
+    public StringRedisOperationService<T> getStringRedisOperationService() {
+        return stringRedisOperationService;
+    }
+
+    public SetRedisOperationService<T> getSetRedisOperationService() {
+        return setRedisOperationService;
+    }
+
+    public ListRedisOperationService<T> getListRedisOperationService() {
+        return listRedisOperationService;
+    }
+
+    public HashRedisOperationService<T> getHashRedisOperationService() {
+        return hashRedisOperationService;
     }
 }

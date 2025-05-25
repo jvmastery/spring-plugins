@@ -1,6 +1,8 @@
-package cn.jvmaster.security;
+package cn.jvmaster.security.customizer;
 
+import cn.jvmaster.security.domain.RoleInfo;
 import cn.jvmaster.security.domain.UserInfo;
+import java.util.List;
 
 /**
  * 定义获取信息获取服务

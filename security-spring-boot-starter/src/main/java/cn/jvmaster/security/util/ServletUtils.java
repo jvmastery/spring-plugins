@@ -2,8 +2,10 @@ package cn.jvmaster.security.util;
 
 import cn.jvmaster.core.constant.Code;
 import cn.jvmaster.core.constant.Variables;
+import cn.jvmaster.core.domain.LocalCache;
 import cn.jvmaster.core.exception.SystemException;
 import cn.jvmaster.core.util.StringUtils;
+import cn.jvmaster.redis.constant.CacheConstant;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
@@ -17,6 +19,7 @@ import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 /**
  *  servlet相关请求工具类
@@ -25,8 +28,8 @@ import java.util.Map;
  * @version       1.0
  */
 public class ServletUtils {
-
     private static final String UNKNOWN = "unknown";
+    private static final LocalCache<AntPathRequestMatcher> MATCHER_LOCAL_CACHE = new LocalCache<>();
 
     /**
      *  输出纯文本内容
@@ -193,6 +196,21 @@ public class ServletUtils {
         }
 
         return headersMap;
+    }
 
+    /**
+     * 判断请求是否匹配
+     * @param pattern   请求表达式
+     * @param method    请求方法
+     * @param request   request
+     * @return  是否匹配
+     */
+    public static boolean matches(String pattern, String method, HttpServletRequest request) {
+        if (StringUtils.isEmpty(pattern)) {
+            return false;
+        }
+
+        AntPathRequestMatcher matcher = MATCHER_LOCAL_CACHE.get(pattern + CacheConstant.SEPARATOR + method, () -> new AntPathRequestMatcher(pattern, method));
+        return matcher.matches(request);
     }
 }

@@ -1,11 +1,13 @@
 package cn.jvmaster.core.tree;
 
+import cn.jvmaster.core.tree.BinarySearchTree.BinaryTreeNode;
 import cn.jvmaster.core.util.CollectionUtils;
-import java.lang.constant.ConstantDesc;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -16,7 +18,7 @@ import java.util.function.Predicate;
  * @date 2024/12/26 8:59
  * @version 1.0
 **/
-public class BinarySearchTree<T> implements Tree<T> {
+public class BinarySearchTree<T> implements Tree<T, BinaryTreeNode<T>> {
 
     /**
      * 根节点
@@ -28,9 +30,21 @@ public class BinarySearchTree<T> implements Tree<T> {
      */
     private Comparator<T> comparator;
 
+    public BinarySearchTree(Comparator<T> comparator) {
+        this.comparator = comparator;
+    }
+
+    public BinarySearchTree() {
+    }
+
     @Override
-    public <V extends T> TreeNode<T> insert(V node) {
+    public <V extends T> BinaryTreeNode<T> insert(V node) {
         if (node == null) {
+            return root;
+        }
+
+        if (root == null) {
+            root = new BinaryTreeNode<>(node);
             return root;
         }
 
@@ -41,18 +55,17 @@ public class BinarySearchTree<T> implements Tree<T> {
      * 插入数据到节点下
      * @param root  根节点
      * @param node  待插入节点
-     * @param <V>   节点数据类型
      */
-    private <V extends T> BinaryTreeNode<V> insert(BinaryTreeNode<V> root, V node) {
+    private BinaryTreeNode<T> insert(BinaryTreeNode<T> root, T node) {
         if (root == null) {
             return new BinaryTreeNode<>(node);
         }
 
         // 和根节点数据进行比较，如果大于，则插入到右子树中，小于则插入到左子树中
         int result = compare(root.data, node);
-        if (result > 0) {
+        if (result < 0) {
             root.right = insert(root.right, node);
-        } else if (result < 0) {
+        } else if (result > 0) {
             root.left = insert(root.left, node);
         }
 
@@ -79,16 +92,26 @@ public class BinarySearchTree<T> implements Tree<T> {
     }
 
     @Override
-    public <V extends T> Tree<T> insertAll(Collection<V> nodes) {
+    public <V extends T> Tree<T, BinaryTreeNode<T>> insertAll(Collection<V> nodes) {
         CollectionUtils.traverse(nodes, this::insert);
         return this;
     }
 
     @Override
     public List<T> delete(T data) {
-        return List.of();
+        BinaryTreeNode<T> deleteNode = delete(root, item -> compare(item, data));
+        if (deleteNode == null) {
+            return Collections.emptyList();
+        }
+
+        return List.of(deleteNode.data);
     }
 
+    /**
+     * 删除指定节点
+     * @param root  根节点
+     * @param apply 数据比较器
+     */
     public <V extends T> BinaryTreeNode<V> delete(BinaryTreeNode<V> root, Function<T, Integer> apply) {
         if (root == null) {
             return null;
@@ -127,24 +150,24 @@ public class BinarySearchTree<T> implements Tree<T> {
     }
 
     @Override
-    public TreeNode<T> search(T data) {
+    public Optional<BinaryTreeNode<T>> search(T data) {
         if (data == null) {
-            return null;
+            return Optional.empty();
         }
 
-        return search(root, item -> compare(item, data));
+        return Optional.ofNullable(search(root, item -> compare(item, data)));
+    }
+
+    @Override
+    public Optional<BinaryTreeNode<T>> search(Predicate<BinaryTreeNode<T>> predicate) {
+        return Optional.empty();
     }
 
     /**
-     * 根据自定义条件进行查询
-     *
-     * @param apply 查询判断
-     * @return  对应的节点
+     * 查询数据
+     * @param root  根节点
+     * @param apply 数据比较器
      */
-    public TreeNode<T> search(Function<T, Integer> apply) {
-        return search(root, apply);
-    }
-
     private <V extends T> BinaryTreeNode<V> search(BinaryTreeNode<V> root, Function<T, Integer> apply) {
         if (root == null) {
             return null;
@@ -165,37 +188,106 @@ public class BinarySearchTree<T> implements Tree<T> {
 
     @Override
     public boolean contains(T data) {
-        return search(data) != null;
+        return search(data).isPresent();
     }
 
     @Override
     public List<T> traverse() {
-        return List.of();
+        return traverse(null);
     }
 
     @Override
-    public List<T> traverse(Consumer<TreeNode<T>> consumer) {
-        return List.of();
+    public List<T> traverse(Consumer<BinaryTreeNode<T>> consumer) {
+        List<T> list = new ArrayList<>();
+        traverse(root, item -> {
+            list.add(item.getData());
+            if (consumer != null) {
+                consumer.accept(item);
+            }
+        });
+
+        return list;
+    }
+
+    /**
+     * 前序遍历， 根 - 左 - 右
+     * @param node      根节点
+     * @param consumer  回调函数
+     */
+    private void traverse(BinaryTreeNode<T> node, Consumer<BinaryTreeNode<T>> consumer) {
+        if (node == null) {
+            return;
+        }
+
+        consumer.accept(node);
+        traverse(node.getLeft(), consumer);
+        traverse(node.getRight(), consumer);
     }
 
     @Override
     public List<T> inOrderTraverse() {
-        return List.of();
+        return inOrderTraverse(null);
     }
 
     @Override
-    public List<T> inOrderTraverse(Consumer<TreeNode<T>> consumer) {
-        return List.of();
+    public List<T> inOrderTraverse(Consumer<BinaryTreeNode<T>> consumer) {
+        List<T> list = new ArrayList<>();
+        inOrderTraverse(root, item -> {
+            list.add(item.getData());
+            if (consumer != null) {
+                consumer.accept(item);
+            }
+        });
+
+        return list;
+    }
+
+    /**
+     * 中序遍历， 左 - 根 - 右
+     * @param node      根节点
+     * @param consumer  回调函数
+     */
+    private void inOrderTraverse(BinaryTreeNode<T> node, Consumer<BinaryTreeNode<T>> consumer) {
+        if (node == null) {
+            return;
+        }
+
+        inOrderTraverse(node.getLeft(), consumer);
+        consumer.accept(node);
+        inOrderTraverse(node.getRight(), consumer);
     }
 
     @Override
     public List<T> postOrderTraverse() {
-        return List.of();
+        return postOrderTraverse(null);
     }
 
     @Override
-    public List<T> postOrderTraverse(Consumer<TreeNode<T>> consumer) {
-        return List.of();
+    public List<T> postOrderTraverse(Consumer<BinaryTreeNode<T>> consumer) {
+        List<T> list = new ArrayList<>();
+        postOrderTraverse(root, item -> {
+            list.add(item.getData());
+            if (consumer != null) {
+                consumer.accept(item);
+            }
+        });
+
+        return list;
+    }
+
+    /**
+     * 后序遍历， 左 - 右 - 根
+     * @param node      根节点
+     * @param consumer  回调函数
+     */
+    private void postOrderTraverse(BinaryTreeNode<T> node, Consumer<BinaryTreeNode<T>> consumer) {
+        if (node == null) {
+            return;
+        }
+
+        postOrderTraverse(node.getLeft(), consumer);
+        postOrderTraverse(node.getRight(), consumer);
+        consumer.accept(node);
     }
 
     /**
