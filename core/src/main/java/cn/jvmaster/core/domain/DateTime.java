@@ -4,7 +4,9 @@ import cn.jvmaster.core.constant.DateField;
 import cn.jvmaster.core.constant.Month;
 import cn.jvmaster.core.constant.Week;
 import cn.jvmaster.core.util.DateUtils;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import java.io.Serial;
+import java.text.ParseException;
 import java.time.Instant;
 import java.util.Calendar;
 import java.util.Date;
@@ -347,6 +349,11 @@ public class DateTime extends Date {
 
     @Override
     public String toString() {
-        return DateUtils.covert(this);
+        return DateUtils.convert(this);
+    }
+
+    @JsonCreator
+    public static DateTime fromString(String dateStr) {
+        return DateUtils.convert(dateStr);
     }
 }

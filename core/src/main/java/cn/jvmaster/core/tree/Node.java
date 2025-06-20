@@ -23,6 +23,14 @@ public interface Node<T extends ConstantDesc> {
     T getParentId();
 
     /**
+     * 获取节点名称
+     * @return   节点名称
+     */
+    default String getDisplayName() {
+        return null;
+    };
+
+    /**
      * 获取节点顺序
      * @return  顺序
      */

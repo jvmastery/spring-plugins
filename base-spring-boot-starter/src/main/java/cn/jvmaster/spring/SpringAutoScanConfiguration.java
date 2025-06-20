@@ -11,9 +11,7 @@ import org.springframework.context.annotation.Configuration;
 **/
 @Configuration
 @ComponentScan(basePackages = {
-    "cn.jvmaster.spring.configuration",
-    "cn.jvmaster.spring.converter" ,
-    "cn.jvmaster.spring.util"
+    "cn.jvmaster.spring"
 })
 public class SpringAutoScanConfiguration {
 

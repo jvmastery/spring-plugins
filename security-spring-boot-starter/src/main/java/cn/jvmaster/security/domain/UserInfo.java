@@ -1,5 +1,6 @@
 package cn.jvmaster.security.domain;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -19,6 +20,13 @@ public interface UserInfo<T> {
      * 获取用户密码
      */
     String getPassword();
+
+    /**
+     * 获取密码过期时间
+     */
+    default Date getPasswordExpireTime() {
+        return null;
+    }
 
     /**
      * 获取用户角色

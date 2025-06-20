@@ -1,12 +1,15 @@
 package cn.jvmaster.security.util;
 
 import cn.jvmaster.core.constant.Code;
+import cn.jvmaster.core.constant.DateField;
 import cn.jvmaster.core.exception.SystemException;
+import cn.jvmaster.core.util.DateUtils;
 import cn.jvmaster.redis.service.RedisOperationService;
 import cn.jvmaster.security.constant.SecurityCacheName;
 import cn.jvmaster.security.customizer.UserCustomizer;
 import cn.jvmaster.security.domain.AuthorizationUser;
 import cn.jvmaster.security.domain.OAuth2IntrospectionAuthenticatedPrincipal;
+import cn.jvmaster.spring.domain.RequestAesKey;
 import cn.jvmaster.security.domain.UserInfo;
 import cn.jvmaster.spring.util.SpringUtils;
 import jakarta.servlet.http.HttpServletRequest;
@@ -32,6 +35,8 @@ import org.springframework.security.oauth2.server.authorization.token.OAuth2Toke
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
 
 /**
  * 授权认证工具类
@@ -125,14 +130,14 @@ public class AuthorizationUtils {
      * @return UserInfo
      */
     public static AuthorizationUser getLoginUser() {
-        return getLoginUser(true);
+        return getLoginUser(true, true);
     }
 
     /**
      * 获取当前登录用户信息
      * @param throwEx 没有获取到用户信息时，是否抛出异常
      */
-    public static AuthorizationUser getLoginUser(boolean throwEx) {
+    public static AuthorizationUser getLoginUser(boolean throwEx, boolean checkPasswordExpired) {
         if (SecurityContextHolder.getContext() == null || SecurityContextHolder.getContext().getAuthentication() == null) {
             throwException(throwEx);
             return null;
@@ -142,6 +147,16 @@ public class AuthorizationUtils {
         if (principal instanceof OAuth2IntrospectionAuthenticatedPrincipal authenticatedPrincipal) {
             Object userPrincipal = authenticatedPrincipal.principal();
             if (userPrincipal instanceof Authentication authentication && authentication.getPrincipal() instanceof AuthorizationUser authorizationUser) {
+                if (checkPasswordExpired) {
+                    // 验证密码是否过期
+                    if (authorizationUser.passwordExpireTime() != null
+                        && authorizationUser.passwordExpireTime().before(DateUtils.now()
+                        .setField(DateField.HOUR, 23)
+                        .setField(DateField.MINUTE, 59)
+                        .setField(DateField.SECOND, 59))) {
+                        throw new SystemException(Code.PASSWORD_EXPIRED, "密码已过期，请修改密码");
+                    }
+                }
                 return authorizationUser;
             }
         }
@@ -151,11 +166,32 @@ public class AuthorizationUtils {
     }
 
     /**
+     * 获取当前token对应的加密秘钥
+     * @return RequestAesKey
+     */
+    public static RequestAesKey getRequestAesKey() {
+        if (SecurityContextHolder.getContext() == null || SecurityContextHolder.getContext().getAuthentication() == null) {
+            return null;
+        }
+
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (principal instanceof OAuth2IntrospectionAuthenticatedPrincipal authenticatedPrincipal) {
+            return authenticatedPrincipal.requestAesKey();
+        }
+
+        return null;
+    }
+
+    /**
      * 获取当前客户端信息
      */
     public static String getClientId() {
         if (SecurityContextHolder.getContext() == null || SecurityContextHolder.getContext().getAuthentication() == null) {
             return null;
+        }
+
+        if (SecurityContextHolder.getContext().getAuthentication() instanceof OAuth2ClientAuthenticationToken clientAuthenticationToken) {
+            return clientAuthenticationToken.getRegisteredClient().getId();
         }
 
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -170,7 +206,7 @@ public class AuthorizationUtils {
      * 获取登录用户信息
      */
     public static UserInfo<?> getUserInfo() {
-        AuthorizationUser authorizationUser = getLoginUser(false);
+        AuthorizationUser authorizationUser = getLoginUser(false, true);
         if (authorizationUser == null) {
             // 没有登录用户信息
             return null;

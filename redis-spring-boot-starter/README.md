@@ -28,7 +28,7 @@ public class Application {
 ## 1、分布式锁
 使用`RedisOperationService`的lock方法，来进行加锁操作。
 ```
-@RunWith(SpringRunner.class)
+@RunWith(SpringRunner.class) 
 @SpringBootTest(classes = Application.class)
 public class Test {
     @Autowired

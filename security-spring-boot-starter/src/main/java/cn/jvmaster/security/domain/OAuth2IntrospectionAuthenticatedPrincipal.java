@@ -1,5 +1,6 @@
 package cn.jvmaster.security.domain;
 
+import cn.jvmaster.spring.domain.RequestAesKey;
 import java.security.Principal;
 import java.util.Collection;
 import java.util.Map;
@@ -15,7 +16,8 @@ public record OAuth2IntrospectionAuthenticatedPrincipal(String name,
                                                          String clientId,
                                                          Map<String, Object> attributes,
                                                          Collection<GrantedAuthority> authorities,
-                                                         Principal principal) implements OAuth2AuthenticatedPrincipal {
+                                                         Principal principal,
+                                                        RequestAesKey requestAesKey) implements OAuth2AuthenticatedPrincipal {
 
     @Override
     public Map<String, Object> getAttributes() {

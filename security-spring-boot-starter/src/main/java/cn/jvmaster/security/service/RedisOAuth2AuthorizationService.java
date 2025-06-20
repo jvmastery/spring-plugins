@@ -4,6 +4,7 @@ import cn.jvmaster.redis.constant.CacheConstant;
 import cn.jvmaster.security.constant.OAuth2AuthorizationTokenType;
 import cn.jvmaster.security.constant.SecurityVariables;
 import cn.jvmaster.security.domain.RedisOAuth2Authorization;
+import cn.jvmaster.spring.domain.RequestAesKey;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -24,6 +25,8 @@ import org.springframework.security.oauth2.server.authorization.client.Registere
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
 
 /**
  * 于管理新的和现有的授权，将授权信息存储到redis中
@@ -58,10 +61,16 @@ public class RedisOAuth2AuthorizationService implements OAuth2AuthorizationServi
          */
         RedisOAuth2Authorization redisOAuth2Authorization = new RedisOAuth2Authorization(authorization);
 
+        // 授权时，存储下对应的加密秘钥信息
+        if (RequestContextHolder.getRequestAttributes() != null) {
+            redisOAuth2Authorization.setRequestAesKey((RequestAesKey) RequestContextHolder.getRequestAttributes().getAttribute(RequestAesKey.class.getName(), RequestAttributes.SCOPE_REQUEST));
+        }
+
         // 存储到redis中
         Duration cacheExpireTime = Duration.ofSeconds(redisOAuth2Authorization.getMaxExpiresAt() == null ? 60*30L :
                 redisOAuth2Authorization.getMaxExpiresAt().getEpochSecond() - Instant.now().getEpochSecond());
         long current = Instant.now().getEpochSecond();
+
         redisTemplate.executePipelined(new SessionCallback<>() {
             @Override
             public Object execute(@NonNull RedisOperations operations) throws DataAccessException {
@@ -152,12 +161,17 @@ public class RedisOAuth2AuthorizationService implements OAuth2AuthorizationServi
             throw new DataRetrievalFailureException(
                     "The RegisteredClient with id '" + authorization.getRegisteredClientId() + "' was not found in the RegisteredClientRepository.");
         }
+
         OAuth2Authorization.Builder builder = OAuth2Authorization.withRegisteredClient(registeredClient);
         builder.id(authorization.getId())
                 .principalName(authorization.getPrincipalName())
                 .authorizationGrantType(new AuthorizationGrantType(authorization.getAuthorizationGrantType()))
                 .authorizedScopes(authorization.getAuthorizedScopes())
-                .attributes((attrs) -> attrs.putAll(authorization.getAttributes()));
+                .attributes((attrs) -> attrs.putAll(authorization.getAttributes()))
+        ;
+        if (authorization.getRequestAesKey() != null) {
+            builder.attribute(RequestAesKey.class.getName(), authorization.getRequestAesKey());
+        }
 
         if (StringUtils.hasText(authorization.getState())) {
             builder.attribute(OAuth2ParameterNames.STATE, authorization.getState());

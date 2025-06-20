@@ -17,11 +17,7 @@ public class LongToStringSerializer extends JsonSerializer<Long> {
     public void serialize(Long value, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
         if(value != null) {
             String stringValue = String.valueOf(value);
-            if(stringValue.length() > 15) {
-                jsonGenerator.writeString(stringValue);
-            } else {
-                jsonGenerator.writeNumber(value);
-            }
+            jsonGenerator.writeString(stringValue);
         }
     }
 }

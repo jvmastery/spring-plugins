@@ -1,6 +1,7 @@
 package cn.jvmaster.security.domain;
 
 import cn.jvmaster.security.constant.OAuth2AuthorizationTokenType;
+import cn.jvmaster.spring.domain.RequestAesKey;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
@@ -27,6 +28,11 @@ public class RedisOAuth2Authorization {
      * 对象名称
      */
     private String principalName;
+
+    /**
+     * 参数加密秘钥信息
+     */
+    private RequestAesKey requestAesKey;
 
     /**
      * 授权类型
@@ -170,5 +176,13 @@ public class RedisOAuth2Authorization {
 
     public void setTokenValuesMap(Map<OAuth2AuthorizationTokenType, OAuth2AuthorizationTokenValue> tokenValuesMap) {
         this.tokenValuesMap = tokenValuesMap;
+    }
+
+    public RequestAesKey getRequestAesKey() {
+        return requestAesKey;
+    }
+
+    public void setRequestAesKey(RequestAesKey requestAesKey) {
+        this.requestAesKey = requestAesKey;
     }
 }

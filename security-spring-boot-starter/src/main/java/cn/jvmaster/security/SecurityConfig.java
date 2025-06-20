@@ -4,9 +4,13 @@ import cn.jvmaster.security.authentication.OAuth2PasswordAuthenticationConverter
 import cn.jvmaster.security.authentication.OAuth2PasswordAuthenticationProvider;
 import cn.jvmaster.security.customizer.OpenIpCustomizer;
 import cn.jvmaster.security.customizer.SecurityCustomizer;
+import cn.jvmaster.security.filter.ParameterDecryptFilter;
 import cn.jvmaster.security.filter.RequestValidatorFilter;
 import cn.jvmaster.security.filter.AuthorityValidationFilter;
 import cn.jvmaster.security.filter.CaptchaValidationFilter;
+import cn.jvmaster.security.filter.ResourceParameterDecryptFilter;
+import cn.jvmaster.security.handler.AuthenticationEntryPointHandler;
+import cn.jvmaster.security.handler.AuthenticationErrorHandler;
 import cn.jvmaster.security.handler.RememberMeAuthenticationSuccessHandler;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -26,6 +30,7 @@ import org.springframework.security.oauth2.server.authorization.settings.Authori
 import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings.Builder;
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenGenerator;
 import org.springframework.security.oauth2.server.resource.introspection.OpaqueTokenIntrospector;
+import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.access.intercept.AuthorizationFilter;
@@ -33,6 +38,7 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
+import org.springframework.security.web.session.DisableEncodeUrlFilter;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
@@ -45,6 +51,7 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 **/
 @EnableWebSecurity
 public class SecurityConfig {
+    private final AuthenticationEntryPointHandler entryPointHandler = new AuthenticationEntryPointHandler();
     private final SecurityProperties securityProperties;
     private final Optional<List<SecurityCustomizer>> customizerList;
     private final List<OpenIpCustomizer> openIpCustomizerList;
@@ -68,6 +75,7 @@ public class SecurityConfig {
     @Bean
     @Order(1)
     public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http,
+                                                                      AccessDeniedHandler accessDeniedHandler,
                                                                       AuthenticationSuccessHandler authenticationSuccessHandler,
                                                                       OpaqueTokenIntrospector opaqueTokenIntrospector,
                                                                       AuthenticationConfiguration authenticationConfiguration,
@@ -85,19 +93,23 @@ public class SecurityConfig {
                             try {
                                 oAuth2TokenEndpointConfigurer
                                     .accessTokenResponseHandler(authenticationSuccessHandler)
+                                    .errorResponseHandler(new AuthenticationErrorHandler())
                                     // 向下兼容，增加一个password模式
                                     .accessTokenRequestConverter(new OAuth2PasswordAuthenticationConverter())
-                                    .authenticationProvider(new OAuth2PasswordAuthenticationProvider(authenticationConfiguration.getAuthenticationManager(), authorizationService, tokenGenerator));
+                                    .authenticationProvider(new OAuth2PasswordAuthenticationProvider(authenticationConfiguration.getAuthenticationManager(), authorizationService, tokenGenerator))
+                                ;
                             } catch (Exception e) {
                                 throw new RuntimeException(e);
                             }
                         }
                     )
+                    .clientAuthentication(oAuth2ClientAuthenticationConfigurer ->
+                        oAuth2ClientAuthenticationConfigurer.errorResponseHandler(new AuthenticationErrorHandler())
+                    )
                     .tokenGenerator(tokenGenerator)
                     .authorizationEndpoint(item -> {
 //                        item.errorResponseHandler()
                     })
-
             ;
             })
             .authorizeHttpRequests(authorize ->
@@ -115,6 +127,8 @@ public class SecurityConfig {
                             new LoginUrlAuthenticationEntryPoint("/login"),
                             new MediaTypeRequestMatcher(MediaType.TEXT_HTML)
                     )
+                .accessDeniedHandler(accessDeniedHandler)
+                .authenticationEntryPoint(entryPointHandler)
             )
             //
             .oauth2ResourceServer(oAuth2ResourceServerConfigurer ->
@@ -122,6 +136,8 @@ public class SecurityConfig {
                         opaqueTokenConfigurer.introspector(opaqueTokenIntrospector);
                     }))
         ;
+
+        http.addFilterAfter(new ParameterDecryptFilter(), DisableEncodeUrlFilter.class);
 
         customizerList.ifPresent(securityCustomizers ->
             securityCustomizers.forEach(securityCustomizer -> securityCustomizer.customize(http, authorizationServerConfigurer)));
@@ -142,11 +158,12 @@ public class SecurityConfig {
                                                           PersistentTokenRepository persistentTokenRepository,
                                                           AccessDeniedHandler accessDeniedHandler,
                                                           OpaqueTokenIntrospector opaqueTokenIntrospector,
-        Optional<AuthorizationManager<HttpServletRequest>> authorizationManager)
+                                                          Optional<AuthorizationManager<HttpServletRequest>> authorizationManager)
             throws Exception {
         http
                 .authorizeHttpRequests((authorize) -> authorize
                         .requestMatchers("/login", "/captcha").permitAll()
+                        .requestMatchers("/js/**", "/css/**", "/images/**", "/favicon.ico", "/static/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 // Form login handles the redirect to the login page from the
@@ -163,12 +180,14 @@ public class SecurityConfig {
                 )
                 .exceptionHandling(httpSecurityExceptionHandlingConfigurer ->
                         httpSecurityExceptionHandlingConfigurer
-                                .accessDeniedHandler(accessDeniedHandler)
+                            .accessDeniedHandler(accessDeniedHandler)
+                            .authenticationEntryPoint(entryPointHandler)
                 )
                 .oauth2ResourceServer(oAuth2ResourceServerConfigurer ->
                         oAuth2ResourceServerConfigurer.opaqueToken(opaqueTokenConfigurer -> {
                             opaqueTokenConfigurer.introspector(opaqueTokenIntrospector);
-                        }))
+                        }).authenticationEntryPoint(entryPointHandler)
+                )
 
         ;
 
@@ -180,6 +199,8 @@ public class SecurityConfig {
         http.addFilterBefore(new RequestValidatorFilter(handlerMapping, openIpCustomizerList), AuthorizationFilter.class);
         authorizationManager.ifPresent(httpServletRequestAuthorizationManager ->
             http.addFilterAfter(new AuthorityValidationFilter(httpServletRequestAuthorizationManager), AuthorizationFilter.class));
+        http.addFilterAfter(new ParameterDecryptFilter(), DisableEncodeUrlFilter.class);
+        http.addFilterAfter(new ResourceParameterDecryptFilter(), BearerTokenAuthenticationFilter.class);
 
         // 对外暴露，提供修改的可能
         customizerList.ifPresent(securityCustomizers ->
@@ -192,19 +213,5 @@ public class SecurityConfig {
     public AuthorizationServerSettings authorizationServerSettings() {
         Builder builder = AuthorizationServerSettings.builder();
         return builder.build();
-    }
-
-    /**
-     *  配置静态资源目录，拦截器忽略静态资源目录
-     */
-    @Bean
-    WebSecurityCustomizer webSecurityCustomizer() {
-        return web -> web.ignoring()
-                .requestMatchers("/js/**",
-                        "/css/**",
-                        "/css/**",
-                        "/images/**",
-                        "/favicon.ico"
-                );
     }
 }

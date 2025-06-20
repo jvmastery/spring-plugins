@@ -1,6 +1,7 @@
 package cn.jvmaster.security.handler;
 
 import cn.jvmaster.security.domain.OAuth2IntrospectionAuthenticatedPrincipal;
+import cn.jvmaster.spring.domain.RequestAesKey;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -10,7 +11,6 @@ import org.springframework.security.oauth2.server.authorization.OAuth2Authorizat
 import org.springframework.security.oauth2.server.authorization.OAuth2TokenType;
 import org.springframework.security.oauth2.server.resource.introspection.BadOpaqueTokenException;
 import org.springframework.security.oauth2.server.resource.introspection.OpaqueTokenIntrospector;
-import org.springframework.stereotype.Component;
 
 /**
  * 解析不透明令牌
@@ -29,13 +29,15 @@ public class OpaqueTokenIntrospectorHandler implements OpaqueTokenIntrospector {
     public OAuth2AuthenticatedPrincipal introspect(String token) {
         OAuth2Authorization oAuth2Authorization = oAuth2AuthorizationService.findByToken(token, OAuth2TokenType.ACCESS_TOKEN);
         if (oAuth2Authorization == null) {
-            throw new BadOpaqueTokenException("授权已经过期，请重新进行登录");
+            throw new BadOpaqueTokenException("登录已过期，请重新登录");
         }
 
         return new OAuth2IntrospectionAuthenticatedPrincipal(oAuth2Authorization.getPrincipalName(),
                 oAuth2Authorization.getRegisteredClientId(),
                 new HashMap<>(),
                 new ArrayList<>(),
-                oAuth2Authorization.getAttribute(Principal.class.getName()));
+                oAuth2Authorization.getAttribute(Principal.class.getName()),
+                oAuth2Authorization.getAttribute(RequestAesKey.class.getName())
+            );
     }
 }

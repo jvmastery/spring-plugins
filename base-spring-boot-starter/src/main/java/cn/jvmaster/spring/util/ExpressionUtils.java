@@ -1,6 +1,5 @@
 package cn.jvmaster.spring.util;
 
-import cn.jvmaster.core.exception.SystemException;
 import cn.jvmaster.core.util.DateUtils;
 import cn.jvmaster.core.util.StringUtils;
 import java.util.Date;

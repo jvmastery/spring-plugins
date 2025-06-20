@@ -3,17 +3,15 @@ package cn.jvmaster.security.filter;
 import cn.jvmaster.spring.constant.SessionVariables;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.ServletRequest;
-import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import org.springframework.http.HttpMethod;
 import org.springframework.lang.NonNull;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
-import org.springframework.web.filter.GenericFilterBean;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 /**
@@ -27,16 +25,16 @@ public class CaptchaValidationFilter extends OncePerRequestFilter {
 
     private final AuthenticationFailureHandler failureHandler;
 
-    private final AntPathRequestMatcher antPathRequestMatcher;
+    private final PathPatternRequestMatcher requestMatcher;
 
     public CaptchaValidationFilter(String loginPage) {
-        this.antPathRequestMatcher = new AntPathRequestMatcher(loginPage, "POST");
+        this.requestMatcher = PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.POST, loginPage);
         this.failureHandler = new SimpleUrlAuthenticationFailureHandler(loginPage + "?error");
     }
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
-        if (!this.antPathRequestMatcher.matches(request)) {
+        if (!this.requestMatcher.matches(request)) {
             // 不是指定的请求，不做验证
             filterChain.doFilter(request, response);
             return;

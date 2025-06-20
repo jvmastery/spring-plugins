@@ -19,7 +19,8 @@ import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 
 /**
  *  servlet相关请求工具类
@@ -29,7 +30,7 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
  */
 public class ServletUtils {
     private static final String UNKNOWN = "unknown";
-    private static final LocalCache<AntPathRequestMatcher> MATCHER_LOCAL_CACHE = new LocalCache<>();
+    private static final LocalCache<PathPatternRequestMatcher> MATCHER_LOCAL_CACHE = new LocalCache<>();
 
     /**
      *  输出纯文本内容
@@ -174,7 +175,7 @@ public class ServletUtils {
             throw new SystemException(Code.ERROR, e.getMessage(), e);
         }
 
-        return sb.toString();
+        return sb.isEmpty() ? null : sb.toString();
     }
 
     /**
@@ -210,7 +211,10 @@ public class ServletUtils {
             return false;
         }
 
-        AntPathRequestMatcher matcher = MATCHER_LOCAL_CACHE.get(pattern + CacheConstant.SEPARATOR + method, () -> new AntPathRequestMatcher(pattern, method));
+        PathPatternRequestMatcher matcher = MATCHER_LOCAL_CACHE.get(pattern + CacheConstant.SEPARATOR + method,
+            () -> PathPatternRequestMatcher.withDefaults().matcher(StringUtils.isEmpty(method) ? null : HttpMethod.valueOf(method.toUpperCase()), pattern.startsWith("/") ? pattern : "/" + pattern )
+        );
+
         return matcher.matches(request);
     }
 }

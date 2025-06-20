@@ -9,6 +9,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.NullNode;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -269,6 +272,83 @@ public class StringUtils {
         });
 
         return sb.toString();
+    }
+
+    /**
+     * 将普通字符串转换成16进制字符串
+     * @param str   普通字符串
+     * @return  16进制字符串
+     */
+    public static String toHex(String str) {
+        if (str == null) {
+            return null;
+        }
+
+        if (str.isBlank()) {
+            return str;
+        }
+
+        return toHex(str.getBytes(StandardCharsets.UTF_8));
+    }
+
+    /**
+     * 将普通字符串转换成16进制字符串
+     * @param buf   二进制
+     * @return  16进制字符串
+     */
+    public static String toHex(byte[] buf) {
+        StringBuilder sb = new StringBuilder();
+        for (byte b : buf) {
+            String hex = Integer.toHexString(b & 0xFF);
+            if (hex.length() == 1) {
+                hex = '0' + hex;
+            }
+
+            sb.append(hex);
+        }
+
+        return sb.toString();
+    }
+
+    /**
+     * 解析16进制字符串为普通字符串
+     * @param hex   16进制字符串
+     * @return 普通字符串
+     */
+    public static String parseHex(String hex) {
+        if (hex == null) {
+            return null;
+        }
+
+        if (hex.isBlank()) {
+            return hex;
+        }
+
+        // 转换
+        byte[] result = new byte[hex.length()/2];
+        for (int i = 0; i< hex.length()/2; i++) {
+            int high = Integer.parseInt(hex.substring(i*2, i*2+1), 16);
+            int low = Integer.parseInt(hex.substring(i*2+1, i*2+2), 16);
+            result[i] = (byte) (high * 16 + low);
+        }
+
+        return new String(result, StandardCharsets.UTF_8);
+    }
+
+    /**
+     *  获取编码后的数据
+     */
+    public static String getEncodeString(String s) {
+        if(s == null) {
+            return null;
+        }
+
+        String encode =  URLEncoder.encode(s, StandardCharsets.UTF_8).toUpperCase();
+
+        // 特殊字符优先处理，空格被编码成为了+号，转成%20
+        return  encode.replace("*", "%2A")
+            .replace("+", "%20")
+            ;
     }
 
     /**

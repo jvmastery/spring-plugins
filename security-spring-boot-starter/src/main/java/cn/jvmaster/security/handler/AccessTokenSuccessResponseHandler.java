@@ -1,6 +1,7 @@
 package cn.jvmaster.security.handler;
 
 import cn.jvmaster.core.domain.BaseResponse;
+import cn.jvmaster.spring.util.ResponseUtils;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -51,9 +52,11 @@ public class AccessTokenSuccessResponseHandler implements AuthenticationSuccessH
         ServletServerHttpResponse httpResponse = new ServletServerHttpResponse(response);
 
         Map<String, Object> result = accessTokenResponseParametersConverter.convert(accessTokenResponse);
+        if (refreshToken != null && refreshToken.getIssuedAt() != null && refreshToken.getExpiresAt() != null) {
+            result.put("refresh_token_expires_in", refreshToken.getExpiresAt().getEpochSecond() - refreshToken.getIssuedAt().getEpochSecond());
+        }
 
         // 启用了csrf，添加csrf token
-
-        mappingJackson2HttpMessageConverter.write(BaseResponse.success(result), null, httpResponse);
+        mappingJackson2HttpMessageConverter.write(BaseResponse.success(ResponseUtils.buildResponseData(result)), null, httpResponse);
     }
 }

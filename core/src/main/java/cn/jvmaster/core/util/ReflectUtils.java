@@ -5,6 +5,7 @@ import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 /**
@@ -51,6 +52,25 @@ public class ReflectUtils {
      */
     public static Field getField(Class<?> clazz, String fieldName) {
         return getField(clazz, field -> StringUtils.equals(field.getName(), fieldName));
+    }
+
+    /**
+     * 遍历对象字段
+     * @param clazz     对象类型
+     * @param consumer  回调
+     */
+    public static void traverseFields(Class<?> clazz, Consumer<Field> consumer) {
+        if (clazz == null || consumer == null) {
+            return;
+        }
+
+        Arrays.stream(clazz.getDeclaredFields()).forEach(consumer);
+
+        // 父类中找相应字段
+        Class<?> superClass = clazz.getSuperclass();
+        if (superClass != null &&  superClass != Object.class) {
+            traverseFields(superClass, consumer);
+        }
     }
 
     /**

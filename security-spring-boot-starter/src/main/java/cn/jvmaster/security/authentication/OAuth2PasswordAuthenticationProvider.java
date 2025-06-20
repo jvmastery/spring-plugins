@@ -1,9 +1,14 @@
 package cn.jvmaster.security.authentication;
 
+import cn.jvmaster.core.exception.SystemException;
 import cn.jvmaster.security.constant.AuthorizationGrantTypeBuilder;
+import cn.jvmaster.security.domain.AuthorizationUser;
 import cn.jvmaster.security.util.AuthorizationUtils;
 import java.security.Principal;
+import java.util.Date;
 import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -11,6 +16,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.oauth2.core.OAuth2RefreshToken;
 import org.springframework.security.oauth2.core.OAuth2Token;
 import org.springframework.security.oauth2.server.authorization.OAuth2Authorization;
@@ -31,6 +37,7 @@ import org.springframework.security.oauth2.server.authorization.token.OAuth2Toke
  * @version 1.0
 **/
 public class OAuth2PasswordAuthenticationProvider implements AuthenticationProvider {
+    private final Logger logger = LoggerFactory.getLogger(getClass());
     private final AuthenticationManager authenticationManager;
     private final OAuth2AuthorizationService authorizationService;
     private final OAuth2TokenGenerator<? extends OAuth2Token> tokenGenerator;
@@ -51,8 +58,16 @@ public class OAuth2PasswordAuthenticationProvider implements AuthenticationProvi
         }
 
         // 用户名密码认证
-        UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(passwordAuthentication.getUsername(), passwordAuthentication.getPassword());
-        Authentication userAuthentication = authenticationManager.authenticate(usernamePasswordAuthenticationToken);
+        Authentication userAuthentication;
+        try {
+            UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(passwordAuthentication.getUsername(),
+                passwordAuthentication.getPassword());
+            userAuthentication = authenticationManager.authenticate(usernamePasswordAuthenticationToken);
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            OAuth2Error error = new OAuth2Error("login_error", "登录失败，请检查用户名或者密码是否正确", "");
+            throw new OAuth2AuthenticationException(error);
+        }
 
         // 授权范围认证
         Set<String> requestedScopes = passwordAuthentication.getScopes();

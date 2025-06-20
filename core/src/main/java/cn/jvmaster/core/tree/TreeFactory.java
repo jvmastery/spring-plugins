@@ -26,7 +26,7 @@ public class TreeFactory {
      * @return              多叉树
      */
     public static <T extends Node<Long>> NaryTree<T> build() {
-        return buildBaseTree(0L, Node::getId, Node::getParentId, Comparator.comparingLong(Node::getPx));
+        return buildBaseTree(0L, Node::getId, Node::getParentId, Node::getDisplayName, Comparator.comparingLong(Node::getPx));
     }
 
     /**
@@ -52,6 +52,7 @@ public class TreeFactory {
      * @param root          根节点
      * @param keyExtractor  id获取方式
      * @param parentExtractor   parentId获取方式
+     * @param nameExtractor 节点名称获取方式
      * @param sortComparator    数据排序方式
      * @return              多叉树
      * @param <T>           数据类型
@@ -59,13 +60,14 @@ public class TreeFactory {
     public static <T> NaryTree<T> build(T root,
                                         Function<T, ? extends ConstantDesc> keyExtractor,
                                         Function<T, ? extends ConstantDesc> parentExtractor,
+                                        Function<T, String> nameExtractor,
                                         Comparator<T> sortComparator) {
         AssertUtils.notNull(root, "树根节点不能为空");
         AssertUtils.notNull(keyExtractor, "节点标识函数不能为空");
         AssertUtils.notNull(parentExtractor, "父节点标识函数不能为空");
         AssertUtils.notNull(sortComparator, "排序比较器不能为空");
 
-        return new NaryTree<>(NaryTreeNode.build(root, keyExtractor), keyExtractor, parentExtractor, sortComparator);
+        return new NaryTree<>(NaryTreeNode.build(root, keyExtractor, nameExtractor), keyExtractor, parentExtractor, nameExtractor, sortComparator);
     }
 
     /**
@@ -74,6 +76,7 @@ public class TreeFactory {
      * @param key          根节点
      * @param keyExtractor  id获取方式
      * @param parentExtractor   parentId获取方式
+     * @param nameExtractor 节点名称获取方式
      * @param sortComparator    数据排序方式
      * @return              多叉树
      * @param <T>           数据类型
@@ -81,6 +84,7 @@ public class TreeFactory {
     public static <T> NaryTree<T> buildBaseTree(ConstantDesc key,
                                 Function<T, ? extends ConstantDesc> keyExtractor,
                                 Function<T, ? extends ConstantDesc> parentExtractor,
+                                Function<T, String> nameExtractor,
                                 Comparator<T> sortComparator) {
         AssertUtils.notNull(key, "树根节点不能为空");
         AssertUtils.notNull(keyExtractor, "节点标识函数不能为空");
@@ -90,7 +94,7 @@ public class TreeFactory {
         NaryTreeNode<T> root = new NaryTreeNode<>();
         root.setId(key);
 
-        return new NaryTree<>(root, keyExtractor, parentExtractor, sortComparator);
+        return new NaryTree<>(root, keyExtractor, parentExtractor, nameExtractor, sortComparator);
     }
 
     /**
@@ -100,6 +104,7 @@ public class TreeFactory {
      * @param keyExtractor  id获取方式
      * @param parentExtractor   parentId获取方式
      * @param sortComparator    数据排序方式
+     * @param nameExtractor 节点名称获取方式
      * @param dataList      构建树的数据集合
      * @return              多叉树
      * @param <T>           数据类型
@@ -107,9 +112,10 @@ public class TreeFactory {
     public static <T> NaryTree<T> build(T root,
                                         Function<T, ? extends ConstantDesc> keyExtractor,
                                         Function<T, ? extends ConstantDesc> parentExtractor,
+                                        Function<T, String> nameExtractor,
                                         Comparator<T> sortComparator,
                                         Collection<T> dataList) {
-        NaryTree<T> naryTree = build(root, keyExtractor, parentExtractor, sortComparator);
+        NaryTree<T> naryTree = build(root, keyExtractor, parentExtractor, nameExtractor, sortComparator);
         naryTree.insertAll(dataList);
 
         return naryTree;

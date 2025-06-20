@@ -1,6 +1,9 @@
 package cn.jvmaster.security.domain;
 
+import cn.jvmaster.core.exception.SystemException;
+import cn.jvmaster.core.util.DateUtils;
 import java.util.Collection;
+import java.util.Date;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -13,6 +16,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 public record AuthorizationUser(Object id,
                                 String username,
                                 String password,
+                                Date passwordExpireTime,
                                 Collection<? extends GrantedAuthority> authorities) implements UserDetails {
 
     @Override
@@ -49,4 +53,5 @@ public record AuthorizationUser(Object id,
     public String getUsername() {
         return username;
     }
+
 }

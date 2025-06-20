@@ -41,7 +41,7 @@ public class AuthorityValidationFilter extends OncePerRequestFilter {
 
         AuthorizationResult authorizationResult = authorizationManager.authorize(() -> currentAuth, request);
         if (authorizationResult == null || !authorizationResult.isGranted()) {
-            throw new AccessDeniedException(Code.NOT_AUTHORIZATION_REQUESAT.getMessage());
+            throw new AccessDeniedException(Code.NOT_AUTHORIZATION_REQUEST.getMessage());
         }
 
         filterChain.doFilter(request, response);

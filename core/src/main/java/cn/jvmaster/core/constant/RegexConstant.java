@@ -17,7 +17,7 @@ public interface RegexConstant {
      * 中国大陆手机号
      * 支持 13、14、15、16、17、18、19 开头的
      */
-    String MOBILE = "^1[3-9]\\d{9}$";
+    String MOBILE = "^1\\d{10}$";
 
     /**
      * 固话（含区号、可选分机号）

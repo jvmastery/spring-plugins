@@ -5,7 +5,6 @@ import cn.jvmaster.security.annotation.RequestValidator;
 import cn.jvmaster.security.authentication.RequestValidatorAuthenticationToken;
 import cn.jvmaster.security.constant.Permission;
 import cn.jvmaster.security.customizer.OpenIpCustomizer;
-import cn.jvmaster.security.annotation.OpenApi;
 import cn.jvmaster.security.util.ServletUtils;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -23,7 +22,7 @@ import org.springframework.web.servlet.HandlerMapping;
 
 /**
  * 增加匿名可访问过滤器
- * 针对存在{@link OpenApi}注解的方法，可以不登录直接进行访问
+ * 针对存在注解的方法，可以不登录直接进行访问
  * @author AI
  * @date 2025/4/23 11:18
  * @version 1.0

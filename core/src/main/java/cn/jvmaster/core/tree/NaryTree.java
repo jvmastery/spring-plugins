@@ -39,6 +39,11 @@ public class NaryTree<T> implements Tree<T, NaryTreeNode<T>> {
     private Function<T, ? extends ConstantDesc> keyExtractor;
 
     /**
+     * 节点数据提取器，用于获取节点ID
+     */
+    private Function<T, String> nameExtractor;
+
+    /**
      * 节点数据提取器，用于获取节点父ID
      */
     private Function<T, ? extends ConstantDesc> parentExtractor;
@@ -51,9 +56,11 @@ public class NaryTree<T> implements Tree<T, NaryTreeNode<T>> {
     public NaryTree(NaryTreeNode<T> root,
                     Function<T, ? extends ConstantDesc> keyExtractor,
                     Function<T, ? extends ConstantDesc> parentExtractor,
+                    Function<T, String> nameExtractor,
                     Comparator<T> sortComparator) {
         this.root = root;
         this.keyExtractor = keyExtractor;
+        this.nameExtractor = nameExtractor;
         this.parentExtractor = parentExtractor;
         this.sortComparator = sortComparator;
     }
@@ -76,6 +83,10 @@ public class NaryTree<T> implements Tree<T, NaryTreeNode<T>> {
 
     public void setSortComparator(Comparator<T> sortComparator) {
         this.sortComparator = sortComparator;
+    }
+
+    public void setNameExtractor(Function<T, String> nameExtractor) {
+        this.nameExtractor = nameExtractor;
     }
 
     @Override
@@ -106,7 +117,7 @@ public class NaryTree<T> implements Tree<T, NaryTreeNode<T>> {
             return null;
         } else {
             // 找到了父节点，将当前节点插入到父节点子元素中
-            NaryTreeNode<T> treeNode = NaryTreeNode.build(node, keyExtractor);
+            NaryTreeNode<T> treeNode = NaryTreeNode.build(node, keyExtractor, nameExtractor);
 
             parentNode.get().getChildren().add(treeNode);
             sort(parentNode.get());
@@ -152,7 +163,7 @@ public class NaryTree<T> implements Tree<T, NaryTreeNode<T>> {
         // 将剩余的游离节点添加到根节点下
         if (!freeNodeMap.isEmpty()) {
             freeNodeMap.forEach((key, value) -> {
-                root.getChildren().addAll(value.stream().map(item -> NaryTreeNode.build(item, keyExtractor)).toList());
+                root.getChildren().addAll(value.stream().map(item -> NaryTreeNode.build(item, keyExtractor, nameExtractor)).toList());
             });
             sort(root);
         }
@@ -172,7 +183,7 @@ public class NaryTree<T> implements Tree<T, NaryTreeNode<T>> {
         }
 
         // 存在该节点的游离节点
-        List<NaryTreeNode<T>> nodeList = freeNodeMap.get(id).stream().map(item -> NaryTreeNode.build(item, keyExtractor)).toList();
+        List<NaryTreeNode<T>> nodeList = freeNodeMap.get(id).stream().map(item -> NaryTreeNode.build(item, keyExtractor, nameExtractor)).toList();
         currentNode.getChildren().addAll(nodeList);
         sort(currentNode);
         freeNodeMap.remove(id);
@@ -389,6 +400,11 @@ public class NaryTree<T> implements Tree<T, NaryTreeNode<T>> {
         private ConstantDesc id;
 
         /**
+         * 节点名称
+         */
+        private String name;
+
+        /**
          * 节点内容
          */
         private T data;
@@ -401,8 +417,9 @@ public class NaryTree<T> implements Tree<T, NaryTreeNode<T>> {
         public NaryTreeNode() {
         }
 
-        public NaryTreeNode(ConstantDesc id, T data, List<NaryTreeNode<T>> children) {
+        public NaryTreeNode(ConstantDesc id, String name, T data, List<NaryTreeNode<T>> children) {
             this.id = id;
+            this.name = name;
             this.data = data;
             this.children = children;
         }
@@ -431,14 +448,22 @@ public class NaryTree<T> implements Tree<T, NaryTreeNode<T>> {
             this.children = children;
         }
 
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
         /**
          * 构建节点
          * @param data  节点数据
          * @return      节点对象
          * @param <T>   数据类型
          */
-        public static <T> NaryTreeNode<T> build(T data, Function<T, ? extends ConstantDesc> keyExtractor) {
-            return new NaryTreeNode<>(keyExtractor.apply(data), data, new ArrayList<>());
+        public static <T> NaryTreeNode<T> build(T data, Function<T, ? extends ConstantDesc> keyExtractor, Function<T, String> nameExtractor) {
+            return new NaryTreeNode<>(keyExtractor.apply(data), nameExtractor != null ? nameExtractor.apply(data) : null, data, new ArrayList<>());
         }
     }
 }

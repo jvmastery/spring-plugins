@@ -2,17 +2,15 @@ package cn.jvmaster.spring.configuration;
 
 import cn.jvmaster.core.constant.Code;
 import cn.jvmaster.core.domain.BaseResponse;
+import cn.jvmaster.spring.util.ResponseUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.lang.NonNull;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 
@@ -24,21 +22,10 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 @RestControllerAdvice
 @ConditionalOnMissingBean(name = "customResponseResultConfiguration")
 public class ResponseResultConfiguration implements ResponseBodyAdvice<Object> {
-    private static final Logger log = LoggerFactory.getLogger(ResponseResultConfiguration.class);
     private final ObjectMapper objectMapper;
 
     public ResponseResultConfiguration(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
-    }
-
-    /**
-     * exception异常处理
-     * @param e 异常信息
-     */
-    @ExceptionHandler(Exception.class)
-    public BaseResponse<?> exception(Exception e) {
-        log.error(e.getMessage(), e);
-        return new BaseResponse<>(Code.ERROR, e.getMessage());
     }
 
     /**
@@ -61,24 +48,30 @@ public class ResponseResultConfiguration implements ResponseBodyAdvice<Object> {
      * @param response the current response
      */
     @Override
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Object beforeBodyWrite(Object body,
                                 @NonNull MethodParameter returnType,
                                 @NonNull MediaType selectedContentType,
                                 @NonNull Class selectedConverterType,
                                 @NonNull ServerHttpRequest request,
                                 @NonNull ServerHttpResponse response) {
-        if (body instanceof BaseResponse) {
+        if (body instanceof BaseResponse baseResponse) {
+            if (Code.OK.getCode().equals(baseResponse.getCode()) && (baseResponse.getSecs() == null || baseResponse.getSecs())) {
+                // 判断相应是否需要加密，如果指定了不加密，则不进行加密
+                baseResponse.setData(ResponseUtils.buildResponseData(baseResponse.getData()));
+            }
+
             return body;
         }
 
         if (body instanceof String) {
             try {
-                return objectMapper.writeValueAsString(BaseResponse.success(body));
+                return objectMapper.writeValueAsString(BaseResponse.success(ResponseUtils.buildResponseData(body)));
             } catch (JsonProcessingException e) {
                 throw new RuntimeException(e);
             }
         }
 
-        return BaseResponse.success(body);
+        return BaseResponse.success(ResponseUtils.buildResponseData(body));
     }
 }

@@ -1,5 +1,7 @@
 package cn.jvmaster.security.service;
 
+import cn.jvmaster.core.constant.Code;
+import cn.jvmaster.core.exception.SystemException;
 import cn.jvmaster.redis.constant.LuaFiles;
 import cn.jvmaster.redis.service.RedisOperationService;
 import cn.jvmaster.security.customizer.UserCustomizer;
@@ -36,10 +38,10 @@ public class SecurityUserDetailsService implements UserDetailsService {
         if (userInfo == null) {
             userInfo = AuthorizationUtils.findUser(username);
             if (userInfo == null) {
-                throw new UsernameNotFoundException("未找到当前用户信息，请确认用户名或者密码是否正确！");
+                throw new UsernameNotFoundException("登录失败，请确认用户名或者密码是否正确！");
             }
         }
 
-        return new AuthorizationUser(userInfo.getId(), username, userInfo.getPassword(), new ArrayList<>());
+        return new AuthorizationUser(userInfo.getId(), username, userCustomizer.passwordPrefix() + userInfo.getPassword(), userInfo.getPasswordExpireTime(), new ArrayList<>());
     }
 }

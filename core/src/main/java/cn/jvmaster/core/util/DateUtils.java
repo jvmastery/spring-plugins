@@ -47,7 +47,7 @@ public class DateUtils {
      * @return  时间字符串
      */
     public static String getCurrentTime() {
-        return covert(new Date());
+        return convert(new Date());
     }
 
     /**
@@ -109,8 +109,8 @@ public class DateUtils {
      * @param date  时间
      * @return  字符串时间
      */
-    public static String covert(Date date) {
-        return covert(date, DateTimeFormat.NORMAL_DATETIME.getPattern());
+    public static String convert(Date date) {
+        return convert(date, DateTimeFormat.NORMAL_DATETIME.getPattern());
     }
 
     /**
@@ -119,7 +119,7 @@ public class DateUtils {
      * @param format    字符串格式
      * @return  字符串时间
      */
-    public static String covert(Date date, String format) {
+    public static String convert(Date date, String format) {
         if (date == null || StringUtils.isEmpty(format)) {
             return null;
         }

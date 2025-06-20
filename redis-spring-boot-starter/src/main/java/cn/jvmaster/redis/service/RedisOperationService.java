@@ -5,6 +5,7 @@ import cn.jvmaster.core.function.Callback;
 import cn.jvmaster.redis.domain.SignEntity;
 import java.time.Duration;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -164,6 +165,24 @@ public class RedisOperationService<T> extends AbstractRedisOperationService<T> {
      */
     public boolean exist(String key) {
         return redisTemplate.hasKey(key);
+    }
+
+    /**
+     * 删除缓存
+     * @param key   缓存key
+     * @return boolean
+     */
+    public boolean delete(String key) {
+        return redisTemplate.delete(key);
+    }
+
+    /**
+     * 删除缓存
+     * @param key   缓存key
+     * @return boolean
+     */
+    public Long delete(Collection<String> key) {
+        return redisTemplate.delete(key);
     }
 
     /**
