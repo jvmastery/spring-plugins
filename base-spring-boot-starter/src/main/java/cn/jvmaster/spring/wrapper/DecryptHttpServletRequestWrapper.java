@@ -23,7 +23,12 @@ public class DecryptHttpServletRequestWrapper extends HttpServletRequestWrapper 
     public DecryptHttpServletRequestWrapper(HttpServletRequest request, Map<String, Object> decryptedParams) {
         super(request);
         if (decryptedParams != null) {
-            decryptedParams.forEach((k, v) -> this.customParams.put(k, new String[]{v.toString()}));
+            decryptedParams.forEach((k, v) -> {
+                if (v == null) {
+                    return;
+                }
+                this.customParams.put(k, new String[]{v.toString()});
+            });
         }
     }
 

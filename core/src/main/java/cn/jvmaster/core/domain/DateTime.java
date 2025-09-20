@@ -34,6 +34,10 @@ public class DateTime extends Date {
     public DateTime() {
     }
 
+    public DateTime(String date) {
+        this(DateUtils.convert(date));
+    }
+
     public DateTime(long date) {
         super(date);
     }

@@ -3,6 +3,8 @@ package cn.jvmaster.spring.util;
 import cn.jvmaster.core.util.AesUtils;
 import cn.jvmaster.core.util.StringUtils;
 import cn.jvmaster.spring.domain.RequestAesKey;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 
@@ -31,7 +33,11 @@ public class ResponseUtils {
         }
 
         // 返回数据，添加标记头，表示这是加密后的数据
-        return ENCRYPT_HEADER + StringUtils.toHex(AesUtils.encryptAes(StringUtils.toString(data), aesKey.key(), aesKey.iv()));
+        try {
+            return ENCRYPT_HEADER + StringUtils.toHex(AesUtils.encryptAes(SpringUtils.getBean(ObjectMapper.class).writeValueAsString(data), aesKey.key(), aesKey.iv()));
+        } catch (JsonProcessingException e) {
+            return data;
+        }
     }
 
 }

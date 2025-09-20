@@ -64,7 +64,6 @@ public class RequestValidatorFilter extends OncePerRequestFilter {
                 authenticationToken.setDetails(currentAuth.getDetails());
 
                 validOpenApi(requestValidator, authenticationToken, request, handlerMethod);
-
                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);
             }
 

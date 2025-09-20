@@ -13,4 +13,8 @@ public interface RoleInfo<T> {
      */
     T getId();
 
+    /**
+     * 角色名称标识
+     */
+    String getName();
 }

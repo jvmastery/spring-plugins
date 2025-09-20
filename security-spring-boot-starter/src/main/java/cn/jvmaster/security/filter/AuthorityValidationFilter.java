@@ -2,6 +2,8 @@ package cn.jvmaster.security.filter;
 
 import cn.jvmaster.core.constant.Code;
 import cn.jvmaster.security.authentication.RequestValidatorAuthenticationToken;
+import cn.jvmaster.security.constant.Permission;
+import cn.jvmaster.security.util.AuthorizationUtils;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -33,10 +35,18 @@ public class AuthorityValidationFilter extends OncePerRequestFilter {
                                     @NonNull HttpServletResponse response,
                                     @NonNull FilterChain filterChain) throws ServletException, IOException {
         Authentication currentAuth = SecurityContextHolder.getContext().getAuthentication();
-        if (currentAuth instanceof RequestValidatorAuthenticationToken authenticationToken && authenticationToken.isAccessAuthority()) {
-            // 开放接口或者仅登录接口
-            filterChain.doFilter(request, response);
-            return;
+        if (currentAuth instanceof RequestValidatorAuthenticationToken authenticationToken) {
+            // 开放接口或者仅任意人接口
+            if (authenticationToken.isAccessAuthority()) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+
+            if (authenticationToken.getRequestValidator().value().equals(Permission.LOGIN_USER)) {
+                AuthorizationUtils.getLoginUser();
+                filterChain.doFilter(request, response);
+                return;
+            }
         }
 
         AuthorizationResult authorizationResult = authorizationManager.authorize(() -> currentAuth, request);

@@ -23,11 +23,29 @@ public class LocalCache<T> {
             return cache.get(key);
         }
 
-        T result = supplier.get();
-        if (result != null) {
-            cache.put(key, result);
+        return put(key, supplier.get());
+    }
+
+    /**
+     * 获取数据
+     * @param key  对应的key值
+     * @return T
+     */
+    public T get(String key) {
+        return cache.get(key);
+    }
+
+    /**
+     * 添加缓存数据
+     * @param key   key
+     * @param value 数据
+     */
+    public T put(String key, T value) {
+        if (value == null) {
+            return null;
         }
 
-        return result;
+        cache.put(key, value);
+        return value;
     }
 }

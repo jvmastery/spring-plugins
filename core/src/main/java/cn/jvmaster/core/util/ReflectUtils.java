@@ -5,8 +5,11 @@ import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * 反射工具类
@@ -159,9 +162,79 @@ public class ReflectUtils {
 
         try {
             field.setAccessible(true);
-            field.set(obj instanceof Class ? null : obj, value);
+            field.set(obj, convertValue(value, field.getType()));
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * 根据集合填充对象数据
+     * @param instance  对象
+     * @param list      集合数据
+     * @param nameApply 获取字段名称
+     * @param valueApply    获取字段值
+     */
+    public static <T> void fillObject(Object instance, List<T> list, Function<T, String> nameApply, Function<T, Object> valueApply) {
+        if (list == null || list.isEmpty()) {
+            return;
+        }
+
+        Map<String, Field> fieldMap = Arrays.stream(instance.getClass().getDeclaredFields())
+            .collect(Collectors.toMap(Field::getName, Function.identity()));
+
+        // 遍历数据
+        for (T item : list) {
+            String fieldName = nameApply.apply(item);
+            if (StringUtils.isEmpty(fieldName) || !fieldMap.containsKey(fieldName)) {
+                continue;
+            }
+
+            Object value = valueApply.apply(item);
+            if (value == null) {
+                continue;
+            }
+
+            setFieldValue(instance, fieldMap.get(fieldName), value);
+        }
+    }
+
+    /**
+     * 基本类型转换方法
+     */
+    public static Object convertValue(Object valueObj, Class<?> targetType) {
+        if (valueObj == null) {
+            return null;
+        }
+
+        // 如果已经是目标类型或其子类，直接返回
+        if (targetType.isInstance(valueObj)) {
+            return valueObj;
+        }
+
+        // 转成字符串再解析
+        String valueStr = String.valueOf(valueObj).trim();
+        if (valueStr.isEmpty()) {
+            return null;
+        }
+
+        if (targetType == String.class) {
+            return valueStr;
+        } else if (targetType == Integer.class || targetType == int.class) {
+            return Integer.valueOf(valueStr);
+        } else if (targetType == Long.class || targetType == long.class) {
+            return Long.valueOf(valueStr);
+        } else if (targetType == Boolean.class || targetType == boolean.class) {
+            return Boolean.valueOf(valueStr);
+        } else if (targetType == Double.class || targetType == double.class) {
+            return Double.valueOf(valueStr);
+        } else if (targetType == Float.class || targetType == float.class) {
+            return Float.valueOf(valueStr);
+        } else if (targetType == Short.class || targetType == short.class) {
+            return Short.valueOf(valueStr);
+        } else if (targetType == Byte.class || targetType == byte.class) {
+            return Byte.valueOf(valueStr);
+        }
+        throw new IllegalArgumentException("Unsupported field type: " + targetType);
     }
 }

@@ -28,7 +28,7 @@ public class ParameterDecryptFilter extends AbstractParameterDecryptFilter {
             return;
         }
 
-        RequestAesKey requestAesKey = new RequestAesKey(AesUtils.DECODER.decode(key), AesUtils.DECODER.decode(iv));
+        RequestAesKey requestAesKey = new RequestAesKey(AesUtils.DECODER.decode(StringUtils.parseHex(key)), AesUtils.DECODER.decode(StringUtils.parseHex(iv)));
         request.setAttribute(RequestAesKey.class.getName(), requestAesKey);
         buildDecryptHttpServletRequestWrapper(request, response, filterChain, requestAesKey.key(), requestAesKey.iv());
     }

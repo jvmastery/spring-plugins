@@ -22,7 +22,7 @@ public class SystemException extends RuntimeException {
     }
 
     public SystemException(Constant<Integer> code) {
-        this.code = code.getCode();
+        this(code, code.getMessage());
     }
 
     public SystemException(Constant<Integer> code, String message) {

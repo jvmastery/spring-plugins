@@ -16,6 +16,10 @@ public enum Permission {
      */
     LOGIN_USER,
     /**
+     * 标注接口为匿名用户接口，不需要登录
+     */
+    ANONYMOUS,
+    /**
      * 其他情况
      */
     OTHER

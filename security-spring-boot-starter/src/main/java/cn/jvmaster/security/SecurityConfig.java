@@ -85,6 +85,7 @@ public class SecurityConfig {
         RequestMatcher endpointsMatcher = authorizationServerConfigurer.getEndpointsMatcher();
 
         http
+            .cors(item -> item.configure(http))
             .securityMatcher(endpointsMatcher)
             .with(authorizationServerConfigurer, authorizationServer -> {
                 authorizationServer
@@ -161,6 +162,7 @@ public class SecurityConfig {
                                                           Optional<AuthorizationManager<HttpServletRequest>> authorizationManager)
             throws Exception {
         http
+            .cors(item -> item.configure(http))
                 .authorizeHttpRequests((authorize) -> authorize
                         .requestMatchers("/login", "/captcha").permitAll()
                         .requestMatchers("/js/**", "/css/**", "/images/**", "/favicon.ico", "/static/**").permitAll()

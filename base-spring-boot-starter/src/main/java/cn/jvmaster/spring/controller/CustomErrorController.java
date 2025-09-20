@@ -2,6 +2,7 @@ package cn.jvmaster.spring.controller;
 
 import cn.jvmaster.core.constant.Code;
 import cn.jvmaster.core.domain.BaseResponse;
+import cn.jvmaster.core.exception.SystemException;
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Map;
@@ -35,6 +36,11 @@ public class CustomErrorController extends AbstractErrorController {
             return new ResponseEntity<>(status);
         } else {
             Throwable throwable = (Throwable) request.getAttribute(RequestDispatcher.ERROR_EXCEPTION);
+            if (throwable instanceof SystemException systemException) {
+                // 系统异常，走成功处理程序
+                return new ResponseEntity<>(BaseResponse.build(systemException.getCode(), systemException.getMessage(), systemException.getMessage()), HttpStatus.OK);
+            }
+
             return new ResponseEntity<>(BaseResponse.error(Code.ERROR, "数据处理失败，请重新进行尝试！", throwable.getMessage()), status);
         }
     }

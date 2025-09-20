@@ -45,6 +45,7 @@ public class RequestValidatorAuthenticationToken extends UsernamePasswordAuthent
      * 登录用户或者开放接口不需要认证权限
      */
     public boolean isAccessAuthority() {
-        return requestValidator.value().equals(Permission.OPEN_API) || requestValidator.value().equals(Permission.LOGIN_USER);
+        return requestValidator.value().equals(Permission.OPEN_API)
+            || requestValidator.value().equals(Permission.ANONYMOUS);
     }
 }

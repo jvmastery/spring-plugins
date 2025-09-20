@@ -17,7 +17,7 @@ public enum Code implements Constant<Integer> {
     TOKEN_FAILED_ERROR(4002, "登录已过期，请重新登录"),
 
     // 用户异常信息
-    USER_NOT_LOGIN(10001, "用户信息获取失败，需重新登录"),
+    USER_NOT_LOGIN(10001, "用户信息获取失败，请重新登录"),
     PASSWORD_EXPIRED(10002, "用户密码已经过期"),
 
     // 未授权访问请求

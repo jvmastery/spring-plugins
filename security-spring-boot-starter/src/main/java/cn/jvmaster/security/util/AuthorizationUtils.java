@@ -3,6 +3,7 @@ package cn.jvmaster.security.util;
 import cn.jvmaster.core.constant.Code;
 import cn.jvmaster.core.constant.DateField;
 import cn.jvmaster.core.exception.SystemException;
+import cn.jvmaster.core.util.CollectionUtils;
 import cn.jvmaster.core.util.DateUtils;
 import cn.jvmaster.redis.service.RedisOperationService;
 import cn.jvmaster.security.constant.SecurityCacheName;
@@ -35,8 +36,6 @@ import org.springframework.security.oauth2.server.authorization.token.OAuth2Toke
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
-import org.springframework.web.context.request.RequestAttributes;
-import org.springframework.web.context.request.RequestContextHolder;
 
 /**
  * 授权认证工具类
@@ -190,7 +189,8 @@ public class AuthorizationUtils {
             return null;
         }
 
-        if (SecurityContextHolder.getContext().getAuthentication() instanceof OAuth2ClientAuthenticationToken clientAuthenticationToken) {
+        if (SecurityContextHolder.getContext().getAuthentication() instanceof OAuth2ClientAuthenticationToken clientAuthenticationToken &&
+            clientAuthenticationToken.getRegisteredClient() != null) {
             return clientAuthenticationToken.getRegisteredClient().getId();
         }
 
@@ -256,7 +256,24 @@ public class AuthorizationUtils {
      */
     private static void throwException(boolean throwEx) {
         if (throwEx) {
-            throw new SystemException(Code.USER_NOT_LOGIN, "用户信息获取失败");
+            throw new SystemException(Code.USER_NOT_LOGIN);
         }
+    }
+
+    /**
+     * 判断当前用户是否拥有某个角色
+     * @param roleName 判断的角色名称
+     */
+    public static boolean hasRole(String roleName) {
+        if (cn.jvmaster.core.util.StringUtils.isEmpty(roleName)) {
+            return false;
+        }
+
+        UserInfo<?> userInfo = getUserInfo();
+        if (userInfo == null || CollectionUtils.isEmpty(userInfo.getRoleList())) {
+            return false;
+        }
+
+        return userInfo.getRoleList().stream().anyMatch(item -> roleName.equals(item.getName()));
     }
 }

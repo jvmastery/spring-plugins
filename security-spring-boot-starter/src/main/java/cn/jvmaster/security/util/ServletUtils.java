@@ -212,7 +212,7 @@ public class ServletUtils {
         }
 
         PathPatternRequestMatcher matcher = MATCHER_LOCAL_CACHE.get(pattern + CacheConstant.SEPARATOR + method,
-            () -> PathPatternRequestMatcher.withDefaults().matcher(StringUtils.isEmpty(method) ? null : HttpMethod.valueOf(method.toUpperCase()), pattern.startsWith("/") ? pattern : "/" + pattern )
+            () -> PathPatternRequestMatcher.withDefaults().matcher(StringUtils.isEmpty(method) || "ALL".equalsIgnoreCase(method) ? null : HttpMethod.valueOf(method.toUpperCase()), pattern.startsWith("/") ? pattern : "/" + pattern )
         );
 
         return matcher.matches(request);

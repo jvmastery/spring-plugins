@@ -59,6 +59,7 @@ public class ExceptionHandlerConfiguration {
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public BaseResponse<?> handleValidException(MethodArgumentNotValidException ex) {
+        log.error(ex.getMessage(), ex);
         return BaseResponse.error(Code.ERROR, ValidatorUtils.validResult(ex.getBindingResult(), false), ex.getMessage());
     }
 }
